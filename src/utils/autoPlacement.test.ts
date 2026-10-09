@@ -57,3 +57,20 @@ test('shrinks the route to fit both dimensions of the requested map box', () => 
   assert.equal(result.posX, 0.49);
   assert.equal(result.posY, 0.51);
 });
+
+test('moves a map colliding with a person while preserving its requested footprint limit', () => {
+  const preferred = { posX: 0.72, posY: 0.22, scale: 0.68 };
+  const result = chooseAutoRoutePlacement({
+    points: route,
+    aspect: 1.5,
+    preferred,
+    fitWithin: { x: 0.50, y: 0.05, width: 0.42, height: 0.46 },
+    noGoZones: [{ x: 0.48, y: 0.04, width: 0.48, height: 0.48 }],
+    hudCard: { enabled: false },
+    elevationConfig: { enabled: false },
+  });
+
+  assert.notEqual(result.posX, preferred.posX);
+  assert.equal(result.scale, preferred.scale);
+  assert.equal(isRoutePlacementClear(route, result, 1.5, [{ x: 0.48, y: 0.04, width: 0.48, height: 0.48 }]), true);
+});

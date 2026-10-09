@@ -76,7 +76,7 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
   }
 
   ctx.drawImage(img, 0, 0, sampleWidth, sampleHeight);
-  const imgData = ctx.getImageData(0, 0, size, size).data;
+  const imgData = ctx.getImageData(0, 0, sampleWidth, sampleHeight).data;
 
   let totalR = 0;
   let totalG = 0;
@@ -132,7 +132,7 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
       totalSat += sat;
 
       // Track left vs right visual mass (detecting athlete side)
-      if (x < size * 0.5) {
+      if (x < sampleWidth * 0.5) {
         leftHalfLums.push(lum);
       } else {
         rightHalfLums.push(lum);

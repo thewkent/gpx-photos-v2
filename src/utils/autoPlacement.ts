@@ -29,12 +29,6 @@ function intersects(a: NormalizedRect, b: NormalizedRect): boolean {
     a.y < b.y + b.height && a.y + a.height > b.y;
 }
 
-function contains(outer: NormalizedRect, inner: NormalizedRect): boolean {
-  return inner.x >= outer.x && inner.y >= outer.y &&
-    inner.x + inner.width <= outer.x + outer.width &&
-    inner.y + inner.height <= outer.y + outer.height;
-}
-
 function complexityCost(bounds: NormalizedRect, grid?: number[]): number {
   if (!grid || grid.length !== 16) return 0;
   let total = 0;
@@ -145,13 +139,12 @@ export function chooseAutoRoutePlacement(options: PlacementOptions): RoutePlacem
       preferenceCost: index === 0 ? 0 : Math.hypot(position.posX - preferred.posX, position.posY - preferred.posY),
       isPreferred: index === 0,
     }));
-    const preferredBounds = getRouteBounds(points, candidates[0], aspect);
-    const preferredFitsBox = !options.fitWithin || contains(options.fitWithin, preferredBounds);
     const validCandidates = candidates.flatMap((candidate) => {
       const bounds = getRouteBounds(points, candidate, aspect);
       const inBounds = bounds.x >= 0.035 && bounds.y >= 0.035 &&
         bounds.x + bounds.width <= 0.965 && bounds.y + bounds.height <= 0.965;
-      const fitsBox = !options.fitWithin || preferredFitsBox;
+      const fitsBox = !options.fitWithin ||
+        (bounds.width <= options.fitWithin.width && bounds.height <= options.fitWithin.height);
       const collides = obstacles.some((obstacle) => intersects(bounds, obstacle));
       if (!inBounds || !fitsBox || collides) return [];
       return [{ candidate, cost: complexityCost(bounds, options.complexityGrid) + candidate.preferenceCost * 24 }];

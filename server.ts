@@ -12,6 +12,15 @@ app.use(express.json({ limit: '25mb' }));
 const apiKey = process.env.GEMINI_API_KEY;
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+type NormalizedBox = [number, number, number, number];
+
+function parseNormalizedBox(value: unknown): NormalizedBox | null {
+  if (!Array.isArray(value) || value.length !== 4 || !value.every(Number.isFinite)) return null;
+  const [x, y, width, height] = value as number[];
+  if (x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > 1 || y + height > 1) return null;
+  return [x, y, width, height];
+}
+
 // Proxy API route for Gemini Vision photo analysis
 app.post('/api/auto-style', async (req, res) => {
   try {
@@ -118,11 +127,18 @@ Verify: no widget intersects a no-go zone, no widgets intersect each other, all 
       let spatialRoute: any = null;
       let elevationConfig: any = null;
 
-      if (Array.isArray(parsed.widgets)) {
-        for (const widget of parsed.widgets) {
-          const [bx, by, bw, bh] = Array.isArray(widget.box)
-            ? widget.box
-            : [0.1, 0.1, 0.3, 0.2];
+      const validWidgets = Array.isArray(parsed.widgets)
+        ? parsed.widgets.flatMap((widget: any) => {
+            const box = parseNormalizedBox(widget?.box);
+            return box && ['hud', 'map', 'elevation'].includes(widget?.type)
+              ? [{ ...widget, box }]
+              : [];
+          })
+        : [];
+
+      if (validWidgets.length) {
+        for (const widget of validWidgets) {
+          const [bx, by, bw, bh] = widget.box as NormalizedBox;
 
           if (widget.type === 'hud') {
             hudCard = {
@@ -188,11 +204,23 @@ Verify: no widget intersects a no-go zone, no widgets intersect each other, all 
         hudCard.posX = 0.14;
       }
 
-      const mapWidget = parsed.widgets?.find((w: any) => w.type === 'map');
+      const mapWidget = validWidgets.find((w: any) => w.type === 'map');
       const accentHex = mapWidget?.accent_color || '#FC5200';
+      const protectedBoxes = [
+        ...(Array.isArray(parsed.no_go_zones) ? parsed.no_go_zones : []),
+        ...(Array.isArray(parsed.athlete_boxes) ? parsed.athlete_boxes : []),
+      ].flatMap((box: unknown) => {
+        const validBox = parseNormalizedBox(box);
+        return validBox ? [validBox] : [];
+      });
+      const safeLayout = {
+        ...parsed,
+        widgets: validWidgets,
+        no_go_zones: protectedBoxes,
+      };
 
       const responsePayload = {
-        layoutEngine: parsed,
+        layoutEngine: safeLayout,
         atmosphere: {
           grade: 'original',
           warmth: 0,
@@ -203,9 +231,9 @@ Verify: no widget intersects a no-go zone, no widgets intersect each other, all 
         hudCard,
         elevationConfig,
         summary: {
-          mood: parsed.composition || 'Sports Telemetry Layout',
+          mood: typeof parsed.composition === 'string' ? parsed.composition : 'Sports Telemetry Layout',
           paletteDescription:
-            parsed.widgets?.map((w: any) => `${w.type}: ${w.reasoning}`).join(' • ') ||
+            validWidgets.map((w: any) => `${w.type}: ${typeof w.reasoning === 'string' ? w.reasoning : 'placed in open space'}`).join(' • ') ||
             'Professionally balanced layout',
           routeColorName: 'Harmonized Route Accent',
           accentHex,
