@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { TopBar } from './components/TopBar';
 import { PosterCanvas } from './components/PosterCanvas';
 import { UploadTab } from './components/UploadTab';
 import { OverlayTab } from './components/OverlayTab';
 import { FulfillmentModal } from './components/FulfillmentModal';
+import { LandingPage } from './components/LandingPage';
 import {
   SAMPLE_ACTIVITIES,
   DEFAULT_SPATIAL_CONFIG,
@@ -23,25 +24,65 @@ import {
   HudCardConfig,
   PhotoAtmosphereConfig,
   ElevationOverlayConfig,
+  LogoCorner,
 } from './types/poster';
 import { renderSpatialArtwork } from './utils/canvasRenderer';
-import { analyzeAndAutoStyle, AutoStyleResult } from './utils/autoStyler';
 import { UploadCloud, Layers, Unlock, Download, Share2, Check } from 'lucide-react';
 
 export default function App() {
+  // Option C: Dedicated Landing Page vs Studio Workspace view state
+  const [currentView, setCurrentView] = useState<'landing' | 'studio'>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+      if (path.includes('/studio') || path.includes('/app') || hash === '#studio') {
+        return 'studio';
+      }
+    }
+    return 'landing';
+  });
+
   const [sidebarTab, setSidebarTab] = useState<'upload' | 'overlay'>('upload');
+
+  // Handle browser back/forward and hash navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const hash = window.location.hash;
+      const path = window.location.pathname;
+      if (path.includes('/studio') || path.includes('/app') || hash === '#studio') {
+        setCurrentView('studio');
+      } else {
+        setCurrentView('landing');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateToStudio = () => {
+    setCurrentView('studio');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', '#studio');
+      window.scrollTo(0, 0);
+    }
+  };
+
+  const navigateToLanding = () => {
+    setCurrentView('landing');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', window.location.pathname);
+      window.scrollTo(0, 0);
+    }
+  };
 
   // Core Activity & Scene State
   const [currentActivity, setCurrentActivity] = useState<ActivityData>(SAMPLE_ACTIVITIES[0]);
-  const [photoUrl, setPhotoUrl] = useState<string>(ASSETS.rideJoburgCyclist);
+  const [photoUrl, setPhotoUrl] = useState<string>(ASSETS.sydneyMarathon);
   const [spatialRoute, setSpatialRoute] = useState<SpatialRouteConfig>(DEFAULT_SPATIAL_CONFIG);
   const [hudCard, setHudCard] = useState<HudCardConfig>(DEFAULT_HUD_CONFIG);
   const [atmosphere, setAtmosphere] = useState<PhotoAtmosphereConfig>(DEFAULT_ATMOSPHERE_CONFIG);
   const [elevationConfig, setElevationConfig] = useState<ElevationOverlayConfig>(DEFAULT_ELEVATION_CONFIG);
-
-  // Magic Auto-Style State
-  const [isAutoStyling, setIsAutoStyling] = useState(false);
-  const [autoStyleSummary, setAutoStyleSummary] = useState<AutoStyleResult['summary'] | null>(null);
+  const [logoCorner, setLogoCorner] = useState<LogoCorner>('top-right');
 
   // Digital Monetization & Modal State
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -50,25 +91,6 @@ export default function App() {
 
   // Canvas Reference
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Auto-Analyze Photo Colors and Auto-Coordinate Styles
-  const handleMagicAutoStyle = async () => {
-    setIsAutoStyling(true);
-    try {
-      const result = await analyzeAndAutoStyle(photoUrl, currentActivity);
-      setAtmosphere((prev) => ({ ...prev, ...result.atmosphere }));
-      setSpatialRoute((prev) => ({ ...prev, ...result.spatialRoute }));
-      setHudCard((prev) => ({ ...prev, ...result.hudCard }));
-      if (result.elevationConfig) {
-        setElevationConfig((prev) => ({ ...prev, ...result.elevationConfig }));
-      }
-      setAutoStyleSummary(result.summary);
-    } catch (err) {
-      console.warn('Auto style error:', err);
-    } finally {
-      setIsAutoStyling(false);
-    }
-  };
 
   // High-Resolution 300 DPI Export Handler
   const handleExportPng = (forceUnwatermarked?: boolean) => {
@@ -112,6 +134,7 @@ export default function App() {
             photoImage: photoImg,
             highDpiScale: printDpiScale,
             isWatermarked: !shouldOmitWatermark,
+            logoCorner,
           });
 
           exportCanvas.toBlob((blob) => {
@@ -146,14 +169,21 @@ export default function App() {
     }, 100);
   };
 
+  // If in Landing Mode, render the LandingPage
+  if (currentView === 'landing') {
+    return <LandingPage onOpenStudio={navigateToStudio} />;
+  }
+
+  // Otherwise render the full Studio Workspace
   return (
     <div className="min-h-screen flex flex-col bg-[#0F0F11] text-[#F3F3F5] font-sans antialiased">
-      {/* Top Bar with Brand, Free Export & $10 Paystack Unbrand */}
+      {/* Top Bar with Brand, Navigation, Free Export & $10 Paystack Unbrand */}
       <TopBar
         onOpenOrder={() => setIsOrderModalOpen(true)}
         onExportPng={handleExportPng}
         isExporting={isExporting}
         isWatermarkUnlocked={isWatermarkUnlocked}
+        onGoHome={navigateToLanding}
       />
 
       {/* Main Content Workspace: Digital Canvas (left) + Control Inspector (right) */}
@@ -170,9 +200,7 @@ export default function App() {
               photoUrl={photoUrl}
               canvasRef={canvasRef}
               isWatermarked={!isWatermarkUnlocked}
-              onAutoStyle={handleMagicAutoStyle}
-              isAutoStyling={isAutoStyling}
-              autoStyleSummary={autoStyleSummary}
+              logoCorner={logoCorner}
             />
           </div>
 
@@ -223,9 +251,6 @@ export default function App() {
                     setSpatialRoute((prev) => ({ ...prev, ...spatial }));
                     setHudCard((prev) => ({ ...prev, ...hud }));
                   }}
-                  onAutoStyle={handleMagicAutoStyle}
-                  isAutoStyling={isAutoStyling}
-                  autoStyleSummary={autoStyleSummary}
                   onContinueToOverlay={() => setSidebarTab('overlay')}
                 />
               )}
@@ -240,6 +265,8 @@ export default function App() {
                   onUpdateHudCard={(up) => setHudCard((prev) => ({ ...prev, ...up }))}
                   elevationConfig={elevationConfig}
                   onUpdateElevationConfig={(up) => setElevationConfig((prev) => ({ ...prev, ...up }))}
+                  logoCorner={logoCorner}
+                  onUpdateLogoCorner={(c) => setLogoCorner(c)}
                 />
               )}
             </div>

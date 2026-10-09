@@ -7,6 +7,7 @@ interface TopBarProps {
   onExportPng: (unwatermarked?: boolean) => void;
   isExporting: boolean;
   isWatermarkUnlocked: boolean;
+  onGoHome?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -14,14 +15,28 @@ export const TopBar: React.FC<TopBarProps> = ({
   onExportPng,
   isExporting,
   isWatermarkUnlocked,
+  onGoHome,
 }) => {
   return (
     <header className="sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 py-3 bg-[#121215]/95 backdrop-blur-md border-b border-white/[0.08]">
       {/* Brand: gpx.photos */}
       <div className="flex items-center gap-3">
-        <a href="/" className="flex items-center gap-2 group cursor-pointer">
+        <button
+          onClick={onGoHome}
+          className="flex items-center gap-2 group cursor-pointer bg-transparent border-0 p-0 text-left"
+          title="Back to Landing Page & Overview"
+        >
           <GpxPhotosLogo variant="horizontal" theme="dark" size={32} />
-        </a>
+        </button>
+
+        {onGoHome && (
+          <button
+            onClick={onGoHome}
+            className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-zinc-400 hover:text-white bg-zinc-900 hover:bg-zinc-800 rounded-md border border-white/10 transition-colors cursor-pointer"
+          >
+            <span>Overview & FAQ</span>
+          </button>
+        )}
       </div>
 
       {/* Zone 2: Actions - Free Download with Logo vs $10 Paystack Unbrand */}

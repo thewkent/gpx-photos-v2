@@ -5,6 +5,7 @@ import {
   PhotoAtmosphereConfig,
   ElevationOverlayConfig,
   RouteRenderMode,
+  LogoCorner,
 } from '../types/poster';
 
 export interface SpatialRenderOptions {
@@ -19,6 +20,7 @@ export interface SpatialRenderOptions {
   photoImage: HTMLImageElement | null;
   highDpiScale?: number;
   isWatermarked?: boolean;
+  logoCorner?: LogoCorner;
 }
 
 /**
@@ -37,6 +39,7 @@ export function renderSpatialArtwork({
   photoImage,
   highDpiScale = 1,
   isWatermarked = true,
+  logoCorner = 'top-right',
 }: SpatialRenderOptions): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -68,7 +71,7 @@ export function renderSpatialArtwork({
 
   // 5. © GPX.photos WATERMARK BRANDING (Removed upon payment)
   if (isWatermarked) {
-    drawGpxPhotosWatermark(ctx, width, height);
+    drawGpxPhotosWatermark(ctx, width, height, logoCorner);
   }
 
   ctx.restore();
@@ -1280,23 +1283,45 @@ function drawPostcardLogoEmblem(ctx: CanvasRenderingContext2D, centerX: number, 
 
 /**
  * Draws the prominent GPX.photos promotional brand hallmark badge on free images.
- * Scaled up to serve as high-impact viral hallmark when shared across social & club feeds.
+ * Placed in the selected corner (top-right, top-left, bottom-right, bottom-left).
  */
-function drawGpxPhotosWatermark(ctx: CanvasRenderingContext2D, width: number, height: number) {
+function drawGpxPhotosWatermark(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  corner: LogoCorner = 'top-right'
+) {
   ctx.save();
 
-  // Hallmark badge in top-right corner
-  const badgeW = 310;
-  const badgeH = 76;
-  const badgeX = width - badgeW - 28;
-  const badgeY = 28;
+  // Hallmark badge dimensions
+  const badgeW = 265;
+  const badgeH = 58;
+  const margin = 28;
+
+  let badgeX = width - badgeW - margin;
+  let badgeY = margin;
+
+  if (corner === 'top-left') {
+    badgeX = margin;
+    badgeY = margin;
+  } else if (corner === 'bottom-left') {
+    badgeX = margin;
+    badgeY = height - badgeH - margin;
+  } else if (corner === 'bottom-right') {
+    badgeX = width - badgeW - margin;
+    badgeY = height - badgeH - margin;
+  } else {
+    // top-right default
+    badgeX = width - badgeW - margin;
+    badgeY = margin;
+  }
 
   // Premium dark smoked glass backing with soft shadow
-  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 18);
+  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 16);
   ctx.fillStyle = 'rgba(9, 11, 16, 0.94)';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-  ctx.shadowBlur = 22;
-  ctx.shadowOffsetY = 6;
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 5;
   ctx.fill();
 
   // Subtle luminous rim border
@@ -1304,27 +1329,29 @@ function drawGpxPhotosWatermark(ctx: CanvasRenderingContext2D, width: number, he
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
   ctx.stroke();
 
-  // Draw the official GPX.photos Postcard Emblem
-  drawPostcardLogoEmblem(ctx, badgeX + 38, badgeY + 38, 1.05);
+  // Draw the official GPX.photos Postcard Emblem centered vertically
+  const emblemCenterY = badgeY + badgeH / 2;
+  drawPostcardLogoEmblem(ctx, badgeX + 34, emblemCenterY, 0.95);
 
-  // Main Brand Name: gpx.photos
-  const textStartX = badgeX + 78;
+  // Main Brand Name: gpx.photos (cleanly vertically centered without the 3D telemetry tagline)
+  const textStartX = badgeX + 70;
+  const textBaseY = badgeY + badgeH / 2 + 8;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
 
   // "gpx" (Bold White)
-  ctx.font = '900 25px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#FFFFFF';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
   ctx.shadowBlur = 4;
-  ctx.fillText('gpx', textStartX, badgeY + 41);
+  ctx.fillText('gpx', textStartX, textBaseY);
 
   const gpxW = ctx.measureText('gpx').width;
 
   // "." (Orange Dot)
   const dotRadius = 3.6;
-  const dotX = textStartX + gpxW + 6;
-  const dotY = badgeY + 34;
+  const dotX = textStartX + gpxW + 5.5;
+  const dotY = textBaseY - 6.5;
   ctx.fillStyle = '#FF5500';
   ctx.shadowColor = 'rgba(255, 85, 0, 0.7)';
   ctx.shadowBlur = 8;
@@ -1334,18 +1361,11 @@ function drawGpxPhotosWatermark(ctx: CanvasRenderingContext2D, width: number, he
 
   // "photos" (Bold White)
   const photosStartX = dotX + dotRadius + 5;
-  ctx.font = '900 25px "Plus Jakarta Sans", sans-serif';
+  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#FFFFFF';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
   ctx.shadowBlur = 4;
-  ctx.fillText('photos', photosStartX, badgeY + 41);
-
-  // Advertising Tagline Subtitle: "3D TELEMETRY · CREATED FREE AT GPX.PHOTOS"
-  ctx.font = '700 8.5px "JetBrains Mono", monospace';
-  ctx.fillStyle = '#E4E4E7';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 2;
-  ctx.fillText('3D TELEMETRY · CREATED FREE AT GPX.PHOTOS', textStartX, badgeY + 58);
+  ctx.fillText('photos', photosStartX, textBaseY);
 
   ctx.restore();
 }

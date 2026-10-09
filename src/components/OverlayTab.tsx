@@ -1,6 +1,12 @@
 import React, { useRef, useState } from 'react';
 import { SAMPLE_ACTIVITIES } from '../data/sampleRoutes';
-import { StravaActivityData, SpatialRouteConfig, HudCardConfig, ElevationOverlayConfig } from '../types/poster';
+import {
+  StravaActivityData,
+  SpatialRouteConfig,
+  HudCardConfig,
+  ElevationOverlayConfig,
+  LogoCorner,
+} from '../types/poster';
 import { parseGpxString } from '../utils/gpxParser';
 import {
   Upload,
@@ -19,6 +25,7 @@ import {
   Box,
   Mountain,
   Sun,
+  Stamp,
 } from 'lucide-react';
 
 interface OverlayTabProps {
@@ -30,6 +37,8 @@ interface OverlayTabProps {
   onUpdateHudCard: (updated: Partial<HudCardConfig>) => void;
   elevationConfig: ElevationOverlayConfig;
   onUpdateElevationConfig: (updated: Partial<ElevationOverlayConfig>) => void;
+  logoCorner?: LogoCorner;
+  onUpdateLogoCorner?: (corner: LogoCorner) => void;
 }
 
 export const OverlayTab: React.FC<OverlayTabProps> = ({
@@ -41,6 +50,8 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
   onUpdateHudCard,
   elevationConfig,
   onUpdateElevationConfig,
+  logoCorner = 'top-right',
+  onUpdateLogoCorner,
 }) => {
   const [subSection, setSubSection] = useState<'route' | 'hud' | 'elevation'>('route');
   const [isEditingStats, setIsEditingStats] = useState(false);
@@ -235,6 +246,47 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
           </span>
         </div>
       </div>
+
+      {/* GPX.photos Logo Corner Placement Selector */}
+      {onUpdateLogoCorner && (
+        <div className="p-3 bg-zinc-900/80 border border-white/[0.08] rounded-xl space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Stamp className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-semibold text-white">GPX Logo Corner</span>
+            </div>
+            <span className="text-[10px] font-mono text-zinc-400 uppercase">
+              {logoCorner.replace('-', ' ')}
+            </span>
+          </div>
+          <div className="grid grid-cols-4 gap-1.5">
+            {(
+              [
+                { id: 'top-left', label: 'Top Left' },
+                { id: 'top-right', label: 'Top Right' },
+                { id: 'bottom-left', label: 'Bottom Left' },
+                { id: 'bottom-right', label: 'Bottom Right' },
+              ] as const
+            ).map((c) => {
+              const isSelected = logoCorner === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => onUpdateLogoCorner(c.id)}
+                  className={`py-1.5 px-2 text-[11px] font-medium rounded-lg border text-center transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-amber-400/20 border-amber-400 text-amber-300 font-bold shadow-xs'
+                      : 'bg-zinc-950/60 border-white/[0.08] text-zinc-400 hover:text-white hover:border-white/20'
+                  }`}
+                >
+                  {c.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ======================================================== */}
       {/* SECTION 1: GPS ROUTE OVERLAY                             */}

@@ -1,7 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { StravaActivityData, SpatialRouteConfig, HudCardConfig, PhotoAtmosphereConfig, ElevationOverlayConfig } from '../types/poster';
+import {
+  StravaActivityData,
+  SpatialRouteConfig,
+  HudCardConfig,
+  PhotoAtmosphereConfig,
+  ElevationOverlayConfig,
+  LogoCorner,
+} from '../types/poster';
 import { renderSpatialArtwork } from '../utils/canvasRenderer';
-import { ZoomIn, ZoomOut, RotateCw, Sparkles } from 'lucide-react';
+import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 interface PosterCanvasProps {
   activity: StravaActivityData;
@@ -12,13 +19,7 @@ interface PosterCanvasProps {
   photoUrl: string;
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
   isWatermarked?: boolean;
-  onAutoStyle?: () => void;
-  isAutoStyling?: boolean;
-  autoStyleSummary?: {
-    mood: string;
-    routeColorName: string;
-    accentHex: string;
-  } | null;
+  logoCorner?: LogoCorner;
 }
 
 export const PosterCanvas: React.FC<PosterCanvasProps> = ({
@@ -30,9 +31,7 @@ export const PosterCanvas: React.FC<PosterCanvasProps> = ({
   photoUrl,
   canvasRef,
   isWatermarked = true,
-  onAutoStyle,
-  isAutoStyling,
-  autoStyleSummary,
+  logoCorner = 'top-right',
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [photoImage, setPhotoImage] = useState<HTMLImageElement | null>(null);
@@ -79,36 +78,14 @@ export const PosterCanvas: React.FC<PosterCanvasProps> = ({
       photoImage,
       highDpiScale: window.devicePixelRatio || 2,
       isWatermarked,
+      logoCorner,
     });
-  }, [activity, spatialRoute, hudCard, atmosphere, elevationConfig, photoImage, isWatermarked, activeAspect, canvasRef]);
+  }, [activity, spatialRoute, hudCard, atmosphere, elevationConfig, photoImage, isWatermarked, logoCorner, activeAspect, canvasRef]);
 
   return (
     <div className="flex flex-col h-full items-center justify-between p-4 sm:p-6 select-none">
       {/* Top Floating Control Bar */}
-      <div className="w-full flex items-center justify-between max-w-xl gap-2">
-        {onAutoStyle && (
-          <button
-            onClick={onAutoStyle}
-            disabled={isAutoStyling}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-300 bg-zinc-900/90 hover:bg-zinc-850 backdrop-blur-md rounded-xl border border-amber-500/30 hover:border-amber-400/60 shadow-lg transition-all cursor-pointer disabled:opacity-50 group"
-            title="Auto-analyze photo colors and match atmosphere & route"
-          >
-            <Sparkles
-              className={`w-3.5 h-3.5 text-amber-400 group-hover:rotate-12 transition-transform ${
-                isAutoStyling ? 'animate-spin' : ''
-              }`}
-            />
-            <span>{isAutoStyling ? 'Matching Palette...' : 'Magic Auto-Style'}</span>
-            {autoStyleSummary && !isAutoStyling && (
-              <span
-                className="w-2 h-2 rounded-full border border-white/50 ml-1 shrink-0"
-                style={{ backgroundColor: autoStyleSummary.accentHex }}
-                title={`Applied: ${autoStyleSummary.routeColorName}`}
-              />
-            )}
-          </button>
-        )}
-
+      <div className="w-full flex items-center justify-end max-w-xl gap-2">
         {/* Zoom Controls */}
         <div className="flex items-center gap-1 text-zinc-400 bg-zinc-900/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/10 shadow-lg ml-auto">
           <button

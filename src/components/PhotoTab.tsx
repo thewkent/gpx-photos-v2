@@ -9,15 +9,6 @@ interface PhotoTabProps {
   atmosphere: PhotoAtmosphereConfig;
   onUpdateAtmosphere: (updated: Partial<PhotoAtmosphereConfig>) => void;
   onApplyPresetAlignment?: (spatial: Partial<SpatialRouteConfig>, hud: Partial<HudCardConfig>) => void;
-  onAutoStyle?: () => void;
-  isAutoStyling?: boolean;
-  autoStyleSummary?: {
-    mood: string;
-    paletteDescription: string;
-    routeColorName: string;
-    accentHex: string;
-    source: string;
-  } | null;
 }
 
 export const PhotoTab: React.FC<PhotoTabProps> = ({
@@ -26,9 +17,6 @@ export const PhotoTab: React.FC<PhotoTabProps> = ({
   atmosphere,
   onUpdateAtmosphere,
   onApplyPresetAlignment,
-  onAutoStyle,
-  isAutoStyling,
-  autoStyleSummary,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -43,66 +31,6 @@ export const PhotoTab: React.FC<PhotoTabProps> = ({
     };
     reader.readAsDataURL(file);
   };
-
-  const curatedPhotos = [
-    {
-      label: 'Pro Road Cyclist',
-      url: ASSETS.rideJoburgCyclist,
-      sport: 'Cycling',
-      spatialPreset: {
-        tiltAngle: 0,
-        yawAngle: 0,
-        scale: 1.0,
-        posX: 0.60,
-        posY: 0.65,
-        glowColor: '#FC5200',
-      },
-      hudPreset: {
-        posX: 0.16,
-        posY: 0.70,
-        tiltY: 0,
-        tiltX: 0,
-      },
-    },
-    {
-      label: 'Marathon Open Highway',
-      url: ASSETS.roadMarathoner,
-      sport: 'Running',
-      spatialPreset: {
-        tiltAngle: 0,
-        yawAngle: 0,
-        scale: 0.95,
-        posX: 0.5,
-        posY: 0.65,
-        glowColor: '#FC5200',
-      },
-      hudPreset: {
-        posX: 0.16,
-        posY: 0.70,
-        tiltY: 0,
-        tiltX: 0,
-      },
-    },
-    {
-      label: 'Alpine Ridge Summit',
-      url: ASSETS.trailSummit,
-      sport: 'Trail Ultra',
-      spatialPreset: {
-        tiltAngle: 0,
-        yawAngle: 0,
-        scale: 0.85,
-        posX: 0.55,
-        posY: 0.65,
-        glowColor: '#0284C7',
-      },
-      hudPreset: {
-        posX: 0.16,
-        posY: 0.70,
-        tiltY: 0,
-        tiltX: 0,
-      },
-    },
-  ];
 
   const colorGrades = [
     { id: 'original', label: 'Original (Natural Daylight)' },
@@ -155,98 +83,6 @@ export const PhotoTab: React.FC<PhotoTabProps> = ({
             PNG, JPG, HEIC up to 50MB (Retains 100% Original Ratio)
           </span>
         </button>
-
-        {/* Curated Pro Photos */}
-        <div>
-          <span className="text-[11px] font-medium text-zinc-400 block mb-2">
-            Or choose a reference race scene:
-          </span>
-          <div className="grid grid-cols-3 gap-2">
-            {curatedPhotos.map((photo) => {
-              const isSelected = currentPhotoUrl === photo.url;
-              return (
-                <button
-                  key={photo.url}
-                  onClick={() => {
-                    onSelectPhoto(photo.url);
-                    if (onApplyPresetAlignment) {
-                      onApplyPresetAlignment(photo.spatialPreset, photo.hudPreset);
-                    }
-                  }}
-                  className={`group relative aspect-[4/3] rounded-lg overflow-hidden border transition-all text-left ${
-                    isSelected
-                      ? 'border-amber-400 ring-2 ring-amber-400/30 shadow-md'
-                      : 'border-white/10 opacity-70 hover:opacity-100 hover:border-white/30'
-                  }`}
-                >
-                  <img
-                    src={photo.url}
-                    alt={photo.label}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent p-2 flex flex-col justify-end">
-                    <span className="text-[10px] font-semibold text-white leading-tight truncate">
-                      {photo.sport}
-                    </span>
-                    <span className="text-[9px] text-zinc-300 font-mono truncate">
-                      {photo.label.split(' ')[0]}
-                    </span>
-                  </div>
-
-                  {isSelected && (
-                    <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center shadow">
-                      <Check className="w-2.5 h-2.5 text-zinc-950 stroke-[3]" />
-                    </div>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* MAGIC AUTO-STYLE ACCELERATOR */}
-      <div className="relative overflow-hidden p-4 rounded-xl bg-gradient-to-br from-amber-500/15 via-zinc-900/90 to-zinc-950 border border-amber-500/30 shadow-xl">
-        <div className="flex items-start justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-amber-400" />
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                Magic Auto-Style
-              </h4>
-            </div>
-            <p className="text-[11px] text-zinc-400 leading-relaxed">
-              Analyzes photo palette, tarmac lighting, and negative space to auto-coordinate atmosphere, 3D laser route, and HUD contrast.
-            </p>
-          </div>
-          {onAutoStyle && (
-            <button
-              onClick={onAutoStyle}
-              disabled={isAutoStyling}
-              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-zinc-950 bg-gradient-to-r from-amber-400 to-amber-300 hover:from-amber-300 hover:to-amber-200 rounded-lg shadow-md hover:shadow-amber-400/20 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${isAutoStyling ? 'animate-spin' : ''}`} />
-              <span>{isAutoStyling ? 'Analyzing...' : 'Auto-Style'}</span>
-            </button>
-          )}
-        </div>
-
-        {autoStyleSummary && (
-          <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] font-mono">
-            <div className="flex items-center gap-2 truncate text-amber-300">
-              <span
-                className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/40"
-                style={{ backgroundColor: autoStyleSummary.accentHex }}
-              />
-              <span className="truncate">
-                {autoStyleSummary.mood} • {autoStyleSummary.routeColorName}
-              </span>
-            </div>
-            <span className="text-[9px] text-emerald-400 font-semibold uppercase tracking-wider shrink-0 ml-2 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-              Applied
-            </span>
-          </div>
-        )}
       </div>
 
       {/* 2. PHOTO ENHANCEMENTS & COLOR GRADING */}

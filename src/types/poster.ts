@@ -102,6 +102,8 @@ export interface PhotoAtmosphereConfig {
   warmth: number; // -30 to +40
 }
 
+export type LogoCorner = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+
 export type FrameType = 'unframed' | 'oak' | 'black' | 'white' | 'canvas_wrap';
 
 export interface PrintSize {
