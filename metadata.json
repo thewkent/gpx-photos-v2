@@ -1,0 +1,8 @@
+{
+  "name": "Remix Summit \u0026 Stride Fine Art version 2",
+  "description": "Transform Strava activities and athlete photography into gallery-grade archival prints and drop-shipped canvas art.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

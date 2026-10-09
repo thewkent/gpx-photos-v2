@@ -1,0 +1,192 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 450" fill="none">
+  <defs>
+    <!-- Sky Gradient -->
+    <linearGradient id="skyGradFull" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#008CE8" />
+      <stop offset="60%" stop-color="#21A1F5" />
+      <stop offset="100%" stop-color="#5CC2FF" />
+    </linearGradient>
+
+    <!-- Lake Gradient -->
+    <linearGradient id="lakeGradFull" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#007ECC" />
+      <stop offset="100%" stop-color="#005B9E" />
+    </linearGradient>
+
+    <!-- Clip Path for Front Photo Card -->
+    <clipPath id="photoCardClipFull">
+      <rect x="0" y="0" width="310" height="210" rx="20" ry="20" />
+    </clipPath>
+
+    <!-- Subtle Drop Shadow for Front Card -->
+    <filter id="cardShadowFull" x="-15%" y="-15%" width="135%" height="135%">
+      <feDropShadow dx="3" dy="10" stdDeviation="12" flood-color="#001833" flood-opacity="0.28" />
+    </filter>
+  </defs>
+
+  <!-- ==================================================== -->
+  <!-- 1. BACK CARD (DEEP BLUE, TILTED COUNTER-CLOCKWISE)  -->
+  <!-- ==================================================== -->
+  <g transform="translate(210, 160) rotate(-16) translate(-155, -105)">
+    <rect
+      x="0"
+      y="0"
+      width="300"
+      height="205"
+      rx="28"
+      ry="28"
+      fill="#005BB5"
+    />
+  </g>
+
+  <!-- ==================================================== -->
+  <!-- 2. FRONT PHOTO CARD (WHITE FRAME, TILTED -8 DEG)    -->
+  <!-- ==================================================== -->
+  <g transform="translate(275, 170) rotate(-8) translate(-165, -115)" filter="url(#cardShadowFull)">
+    <!-- Thick White Polarized Photo Frame -->
+    <rect
+      x="-10"
+      y="-10"
+      width="330"
+      height="230"
+      rx="28"
+      ry="28"
+      fill="#FFFFFF"
+    />
+
+    <!-- Inside Clipped Landscape Scene -->
+    <g clip-path="url(#photoCardClipFull)">
+      <!-- Sky Background -->
+      <rect x="0" y="0" width="310" height="210" fill="url(#skyGradFull)" />
+
+      <!-- Soft Stylized Clouds -->
+      <ellipse cx="60" cy="85" rx="42" ry="22" fill="#FFFFFF" opacity="0.82" />
+      <ellipse cx="90" cy="78" rx="35" ry="20" fill="#FFFFFF" opacity="0.92" />
+      <ellipse cx="205" cy="80" rx="55" ry="24" fill="#FFFFFF" opacity="0.75" />
+      <ellipse cx="245" cy="74" rx="42" ry="20" fill="#FFFFFF" opacity="0.85" />
+
+      <!-- Distant Mountain Ridge (Soft Blue) -->
+      <path
+        d="M-20,170 L50,110 L105,145 L155,95 L225,145 L290,105 L340,150 L340,220 L-20,220 Z"
+        fill="#2B77BD"
+      />
+
+      <!-- Far Right Ridge -->
+      <path
+        d="M170,160 L245,95 L330,155 L330,220 L170,220 Z"
+        fill="#1C5E9E"
+      />
+
+      <!-- Main Focal Summit Peak (Center-Left) -->
+      <!-- Shadow Side (Left) -->
+      <path
+        d="M50,185 L145,55 L165,165 L50,185 Z"
+        fill="#103D70"
+      />
+      <!-- Lit Side (Right) -->
+      <path
+        d="M145,55 L225,175 L165,165 Z"
+        fill="#1E5C9E"
+      />
+      <!-- Snowcap Highlight on Apex -->
+      <path
+        d="M145,55 L132,74 L145,80 L140,88 L149,82 L158,89 L162,75 Z"
+        fill="#FFFFFF"
+      />
+      <path
+        d="M145,55 L158,89 L168,78 Z"
+        fill="#A6DBFF"
+        opacity="0.8"
+      />
+
+      <!-- Calm Reflective Alpine Lake / Water -->
+      <rect x="0" y="152" width="310" height="42" fill="url(#lakeGradFull)" />
+      <!-- Subtle lake reflections -->
+      <path d="M70,165 L240,165" stroke="#4DBFFF" stroke-width="2" opacity="0.4" />
+      <path d="M110,172 L210,172" stroke="#4DBFFF" stroke-width="2" opacity="0.3" />
+
+      <!-- Pine Forest Silhouettes (Dark Navy Shoreline) -->
+      <!-- Left Shore Trees -->
+      <path
+        d="M-10,210 L-10,150 L8,162 L8,140 L24,158 L24,135 L40,155 L58,175 L70,210 Z"
+        fill="#081E38"
+      />
+      <!-- Right Shore Silhouette -->
+      <path
+        d="M230,210 L250,165 L270,178 L285,155 L300,170 L320,148 L320,210 Z"
+        fill="#081E38"
+      />
+
+      <!-- ================================================ -->
+      <!-- ORANGE GPS TRACK ROUTE                           -->
+      <!-- ================================================ -->
+      <path
+        d="M48,168 Q75,150 98,125 T145,142 T162,95 T222,68"
+        fill="none"
+        stroke="#FF5500"
+        stroke-width="11"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+
+      <!-- Waypoint 1 (Start) -->
+      <circle cx="48" cy="168" r="9.5" fill="#FF5500" />
+      <circle cx="48" cy="168" r="4.5" fill="#FFFFFF" />
+
+      <!-- Waypoint 2 -->
+      <circle cx="98" cy="125" r="8.5" fill="#FF5500" />
+      <circle cx="98" cy="125" r="4" fill="#FFFFFF" />
+
+      <!-- Waypoint 3 -->
+      <circle cx="145" cy="142" r="8.5" fill="#FF5500" />
+      <circle cx="145" cy="142" r="4" fill="#FFFFFF" />
+
+      <!-- Waypoint 4 -->
+      <circle cx="162" cy="95" r="8.5" fill="#FF5500" />
+      <circle cx="162" cy="95" r="4" fill="#FFFFFF" />
+
+      <!-- ================================================ -->
+      <!-- SUMMIT MAP PIN MARKER                            -->
+      <!-- ================================================ -->
+      <g transform="translate(222, 68)">
+        <!-- Pin Body (Teardrop pointing down to last waypoint) -->
+        <path
+          d="M0,0 C-10,-14 -18,-24 -18,-38 C-18,-52 -5,-62 0,-62 C5,-62 18,-52 18,-38 C18,-24 10,-14 0,0 Z"
+          fill="#FF5500"
+        />
+        <!-- Inner White Circle -->
+        <circle cx="0" cy="-38" r="7.5" fill="#FFFFFF" />
+      </g>
+    </g>
+  </g>
+
+  <!-- ==================================================== -->
+  <!-- 3. LOGOTYPE: gpx.photos                              -->
+  <!-- ==================================================== -->
+  <g transform="translate(65, 385)">
+    <!-- "gpx" text -->
+    <text
+      x="0"
+      y="0"
+      font-family="system-ui, -apple-system, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif"
+      font-size="82"
+      font-weight="900"
+      letter-spacing="-0.03em"
+      fill="#0B2B64"
+    >gpx</text>
+
+    <!-- Orange Dot "." -->
+    <circle cx="184" cy="-22" r="9" fill="#FF5500" />
+
+    <!-- "photos" text -->
+    <text
+      x="200"
+      y="0"
+      font-family="system-ui, -apple-system, 'Plus Jakarta Sans', 'Segoe UI', Roboto, sans-serif"
+      font-size="82"
+      font-weight="900"
+      letter-spacing="-0.03em"
+      fill="#0B2B64"
+    >photos</text>
+  </g>
+</svg>
