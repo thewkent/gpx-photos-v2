@@ -55,7 +55,7 @@ export default function App() {
   const handleMagicAutoStyle = async () => {
     setIsAutoStyling(true);
     try {
-      const result = await analyzeAndAutoStyle(photoUrl);
+      const result = await analyzeAndAutoStyle(photoUrl, currentActivity);
       setAtmosphere((prev) => ({ ...prev, ...result.atmosphere }));
       setSpatialRoute((prev) => ({ ...prev, ...result.spatialRoute }));
       setHudCard((prev) => ({ ...prev, ...result.hudCard }));

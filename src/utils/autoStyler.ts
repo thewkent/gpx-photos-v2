@@ -3,7 +3,9 @@ import {
   SpatialRouteConfig,
   HudCardConfig,
   ElevationOverlayConfig,
+  StravaActivityData,
 } from '../types/poster';
+import { chooseAutoRoutePlacement, NormalizedRect, toRoutePlacement } from './autoPlacement';
 
 export interface AutoStyleResult {
   atmosphere: Partial<PhotoAtmosphereConfig>;
@@ -33,6 +35,7 @@ interface ImageStats {
   rightHalfComplexity: number; // Subject mass detection
   topHalfComplexity: number; // Sky / open air detection
   bottomHalfComplexity: number; // Lower foreground / face / body detection
+  complexityGrid: number[];
   dominantHue: string;
   vibrantAccent: { hex: string; name: string };
   groundTone: 'dark_tarmac' | 'bright_sand' | 'green_trail' | 'neutral_gray';
@@ -44,9 +47,11 @@ interface ImageStats {
  */
 function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
   const canvas = document.createElement('canvas');
-  const size = 80;
-  canvas.width = size;
-  canvas.height = size;
+  const sampleWidth = 80;
+  const aspect = img.naturalWidth / (img.naturalHeight || 1);
+  const sampleHeight = Math.max(1, Math.round(sampleWidth / aspect));
+  canvas.width = sampleWidth;
+  canvas.height = sampleHeight;
   const ctx = canvas.getContext('2d');
 
   if (!ctx) {
@@ -63,13 +68,14 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
       rightHalfComplexity: 25,
       topHalfComplexity: 10,
       bottomHalfComplexity: 35,
+      complexityGrid: Array(16).fill(30),
       dominantHue: 'neutral',
       vibrantAccent: { hex: '#FC5200', name: 'Strava Racing Orange' },
       groundTone: 'neutral_gray',
     };
   }
 
-  ctx.drawImage(img, 0, 0, size, size);
+  ctx.drawImage(img, 0, 0, sampleWidth, sampleHeight);
   const imgData = ctx.getImageData(0, 0, size, size).data;
 
   let totalR = 0;
@@ -88,6 +94,7 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
   const rightHalfLums: number[] = [];
   const topHalfLums: number[] = [];
   const bottomHalfLums: number[] = [];
+  const regionalLuminances: number[][] = Array.from({ length: 16 }, () => []);
 
   // Color buckets for accent detection
   const colorBuckets = {
@@ -99,11 +106,11 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
     white: 0,
   };
 
-  const totalPixels = size * size;
+  const totalPixels = sampleWidth * sampleHeight;
 
-  for (let y = 0; y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * 4;
+  for (let y = 0; y < sampleHeight; y++) {
+    for (let x = 0; x < sampleWidth; x++) {
+      const idx = (y * sampleWidth + x) * 4;
       const r = imgData[idx];
       const g = imgData[idx + 1];
       const b = imgData[idx + 2];
@@ -115,6 +122,9 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       totalLuminance += lum;
       luminances.push(lum);
+      const regionX = Math.min(3, Math.floor((x / sampleWidth) * 4));
+      const regionY = Math.min(3, Math.floor((y / sampleHeight) * 4));
+      regionalLuminances[regionY * 4 + regionX].push(lum);
 
       const max = Math.max(r, g, b);
       const min = Math.min(r, g, b);
@@ -129,16 +139,16 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
       }
 
       // Track top vs bottom visual mass (detecting selfie/portrait lower-body occupation)
-      if (y < size * 0.45) {
+      if (y < sampleHeight * 0.45) {
         topHalfLums.push(lum);
       } else {
         bottomHalfLums.push(lum);
       }
 
       // Track corner luminance distributions
-      if (x < size * 0.4 && y < size * 0.4) topLeftLums.push(lum);
-      if (x > size * 0.6 && y < size * 0.4) topRightLums.push(lum);
-      if (x < size * 0.4 && y > size * 0.6) bottomLeftLums.push(lum);
+      if (x < sampleWidth * 0.4 && y < sampleHeight * 0.4) topLeftLums.push(lum);
+      if (x > sampleWidth * 0.6 && y < sampleHeight * 0.4) topRightLums.push(lum);
+      if (x < sampleWidth * 0.4 && y > sampleHeight * 0.6) bottomLeftLums.push(lum);
 
       // Check for saturated accent color hits
       if (sat > 0.45 && lum > 40 && lum < 220) {
@@ -178,13 +188,14 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
   const rightHalfComplexity = variance(rightHalfLums);
   const topHalfComplexity = variance(topHalfLums);
   const bottomHalfComplexity = variance(bottomHalfLums);
+  const complexityGrid = regionalLuminances.map(variance);
 
   // Ground tone analysis (lower 30% of pixels)
   let groundLumSum = 0;
   let groundCount = 0;
-  for (let y = Math.floor(size * 0.7); y < size; y++) {
-    for (let x = 0; x < size; x++) {
-      const idx = (y * size + x) * 4;
+  for (let y = Math.floor(sampleHeight * 0.7); y < sampleHeight; y++) {
+    for (let x = 0; x < sampleWidth; x++) {
+      const idx = (y * sampleWidth + x) * 4;
       groundLumSum += 0.299 * imgData[idx] + 0.587 * imgData[idx + 1] + 0.114 * imgData[idx + 2];
       groundCount++;
     }
@@ -244,6 +255,7 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
     rightHalfComplexity,
     topHalfComplexity,
     bottomHalfComplexity,
+    complexityGrid,
     dominantHue,
     vibrantAccent,
     groundTone,
@@ -254,7 +266,11 @@ function analyzeImageCanvas(img: HTMLImageElement): ImageStats {
  * Heuristic auto-style engine that derives optimal atmosphere,
  * route styling, and HUD placement from the photo's visual statistics.
  */
-function deriveStyleFromStats(stats: ImageStats, aspect: number): AutoStyleResult {
+function deriveStyleFromStats(
+  stats: ImageStats,
+  aspect: number,
+  activity?: StravaActivityData
+): AutoStyleResult {
   const atmosphere: Partial<PhotoAtmosphereConfig> = {};
   const spatialRoute: Partial<SpatialRouteConfig> = {};
   const hudCard: Partial<HudCardConfig> = {};
@@ -360,17 +376,30 @@ function deriveStyleFromStats(stats: ImageStats, aspect: number): AutoStyleResul
   hudCard.tiltX = 0;
   hudCard.tiltY = 0;
 
+  const elevationConfig: Partial<ElevationOverlayConfig> = {
+    enabled: true,
+    posY: 0.92,
+    height: 52,
+    widthPercent: 0.90,
+    style: 'glass_ribbon',
+  };
+  if (activity?.coordinates.length) {
+    const placement = chooseAutoRoutePlacement({
+      points: activity.coordinates,
+      aspect,
+      preferred: toRoutePlacement(spatialRoute),
+      hudCard,
+      elevationConfig,
+      complexityGrid: stats.complexityGrid,
+    });
+    Object.assign(spatialRoute, placement);
+  }
+
   return {
     atmosphere,
     spatialRoute,
     hudCard,
-    elevationConfig: {
-      enabled: true,
-      posY: 0.92,
-      height: 52,
-      widthPercent: 0.90,
-      style: 'glass_ribbon',
-    },
+    elevationConfig,
     summary: {
       mood,
       paletteDescription,
@@ -386,7 +415,10 @@ function deriveStyleFromStats(stats: ImageStats, aspect: number): AutoStyleResul
  * Generates an efficient thumbnail and invokes Gemini Vision AI via the server endpoint.
  * Seamlessly falls back to local high-precision canvas heuristic if network is offline.
  */
-export async function analyzeAndAutoStyle(photoUrl: string): Promise<AutoStyleResult> {
+export async function analyzeAndAutoStyle(
+  photoUrl: string,
+  activity?: StravaActivityData
+): Promise<AutoStyleResult> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -394,7 +426,7 @@ export async function analyzeAndAutoStyle(photoUrl: string): Promise<AutoStyleRe
     img.onload = async () => {
       const aspect = img.naturalWidth / (img.naturalHeight || 1);
       const stats = analyzeImageCanvas(img);
-      const fallbackResult = deriveStyleFromStats(stats, aspect);
+      const fallbackResult = deriveStyleFromStats(stats, aspect, activity);
 
       // Attempt Gemini Vision AI analysis via server route
       try {
@@ -438,7 +470,30 @@ export async function analyzeAndAutoStyle(photoUrl: string): Promise<AutoStyleRe
 
           if (res.ok) {
             const aiData = await res.json();
-            if (aiData && aiData.atmosphere && aiData.spatialRoute && aiData.hudCard) {
+            if (aiData && aiData.atmosphere && aiData.spatialRoute && aiData.hudCard && aiData.layoutEngine?.fits !== false) {
+              const noGoZones = parseNoGoZones(aiData.layoutEngine?.no_go_zones);
+              const candidateRoute = {
+                ...fallbackResult.spatialRoute,
+                ...aiData.spatialRoute,
+              };
+              const mapBox = aiData.layoutEngine?.widgets?.find((widget: any) => widget.type === 'map')?.box;
+              const fitWithin = Array.isArray(mapBox) && mapBox.length === 4 && mapBox.every(Number.isFinite)
+                ? { x: mapBox[0], y: mapBox[1], width: mapBox[2], height: mapBox[3] }
+                : undefined;
+              const safePlacement = activity?.coordinates.length
+                ? chooseAutoRoutePlacement({
+                    points: activity.coordinates,
+                    aspect,
+                    preferred: toRoutePlacement(candidateRoute),
+                    noGoZones,
+                    hudCard: { ...fallbackResult.hudCard, ...aiData.hudCard },
+                    fitWithin,
+                    elevationConfig: {
+                      ...fallbackResult.elevationConfig,
+                      ...aiData.elevationConfig,
+                    },
+                  })
+                : toRoutePlacement(candidateRoute);
               resolve({
                 atmosphere: {
                   ...fallbackResult.atmosphere,
@@ -447,14 +502,14 @@ export async function analyzeAndAutoStyle(photoUrl: string): Promise<AutoStyleRe
                 },
                 spatialRoute: {
                   ...fallbackResult.spatialRoute,
-                  ...aiData.spatialRoute,
+                  ...candidateRoute,
                   // Keep tilt subtle (12° to 18°) for tactile 3D relief without warping
                   tiltAngle: aiData.spatialRoute.tiltAngle ?? 14,
                   yawAngle: aiData.spatialRoute.yawAngle ?? 0,
                   // Use Gemini's detected open space coordinates or fallback
-                  posX: aiData.spatialRoute.posX ?? fallbackResult.spatialRoute.posX,
-                  posY: aiData.spatialRoute.posY ?? fallbackResult.spatialRoute.posY,
-                  scale: aiData.spatialRoute.scale ?? fallbackResult.spatialRoute.scale,
+                  posX: safePlacement.posX,
+                  posY: safePlacement.posY,
+                  scale: safePlacement.scale,
                   shadowEnabled: true,
                   shadowIntensity: 0.70,
                   shadowOffsetY: 6,
@@ -509,5 +564,15 @@ export async function analyzeAndAutoStyle(photoUrl: string): Promise<AutoStyleRe
     };
 
     img.src = photoUrl;
+  });
+}
+
+function parseNoGoZones(value: unknown): NormalizedRect[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((box): NormalizedRect[] => {
+    if (!Array.isArray(box) || box.length !== 4 || !box.every(Number.isFinite)) return [];
+    const [x, y, width, height] = box as number[];
+    if (width <= 0 || height <= 0 || x < 0 || y < 0 || x + width > 1 || y + height > 1) return [];
+    return [{ x, y, width, height }];
   });
 }
