@@ -22,42 +22,100 @@
     <meta name="twitter:description" content="Transform GPS activities, hikes, rides, runs, and outdoor photography into 3D laser-projected telemetry, floating glass plaques, and unbranded 4K digital finish art." />
     <meta name="twitter:image" content="https://gpx.photos/src/assets/gpx-photos-logo.svg" />
     
-    <!-- Schema.org JSON-LD Structured Data -->
+    <!-- Schema.org JSON-LD Structured Data (WebApplication + FAQPage for Search Rich Snippets & AI LLMs) -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "gpx.photos",
-      "url": "https://gpx.photos",
-      "applicationCategory": "MultimediaApplication",
-      "operatingSystem": "All",
-      "description": "Transform GPS activities, hikes, rides, runs, and outdoor photography into 3D laser-projected telemetry, floating glass plaques, and unbranded 4K digital finish art.",
-      "image": "https://gpx.photos/src/assets/gpx-photos-logo.svg",
-      "offers": [
-        {
-          "@type": "Offer",
-          "name": "Free Social Edition",
-          "price": "0",
-          "priceCurrency": "USD",
-          "description": "High-resolution export with official gpx.photos hallmark watermark badge"
-        },
-        {
-          "@type": "Offer",
-          "name": "Clean Master Edition",
-          "price": "10",
-          "priceCurrency": "USD",
-          "description": "100% unbranded 300 DPI 4K master download with permanent watermark removal"
-        }
-      ],
-      "featureList": [
-        "Interactive 3D Ground Route Projection",
-        "Floating Glassmorphism HUD Telemetry Plaque",
-        "Elevation Profile Ribbon",
-        "Client-Side Privacy (100% in-browser processing)",
-        "Zero-Crop Native Aspect Ratio",
-        "Paystack Instant Unbranded 4K Master Export"
-      ]
-    }
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "gpx.photos",
+        "url": "https://gpx.photos",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript and HTML5 Canvas",
+        "description": "gpx.photos transforms GPS activity files (.gpx) and athlete photography from Garmin, Strava, Apple Watch, AllTrails, Wahoo, and COROS into 3D laser-projected telemetry routes, floating glass HUD plaques, and 4K digital finish art.",
+        "image": "https://gpx.photos/src/assets/images/sydney_marathon_photo_1791548122129.jpg",
+        "offers": [
+          {
+            "@type": "Offer",
+            "name": "Free Social Edition",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Full-resolution export with official gpx.photos hallmark watermark badge in any corner"
+          },
+          {
+            "@type": "Offer",
+            "name": "Clean Master Edition",
+            "price": "10",
+            "priceCurrency": "USD",
+            "description": "100% unbranded 300 DPI 4K master download with permanent watermark removal via Paystack"
+          }
+        ],
+        "featureList": [
+          "Interactive 3D Ground Route Perspective Projection",
+          "Floating Glassmorphism HUD Telemetry Plaque",
+          "Synchronized Elevation Profile Ribbon with Peak Markers",
+          "Zero-Crop Native Camera Aspect Ratio Support",
+          "100% Client-Side Privacy (Processed locally in browser memory without cloud storage)",
+          "Paystack Instant Unbranded 4K Master Export",
+          "Compatible with Garmin, Strava, Apple Watch, Wahoo, COROS, Komoot, and AllTrails"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How does gpx.photos work?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Upload your activity photo (JPEG, PNG, HEIC) and your GPS activity file (.GPX from Garmin, Strava, Apple Watch, AllTrails, Wahoo, or COROS). The in-browser 3D engine projects your true GPS coordinates onto the ground perspective of your photo with custom laser routes, floating smoked glass HUD plaques, and synchronized elevation profiles."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my private race photos or GPS coordinates uploaded to any server?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Never. 100% of the image processing, GPX parsing, and high-resolution rendering happens locally in your browser memory via native HTML5 Canvas 2D and 3D matrix math. Zero bytes of your photos or activity files are ever transmitted to or stored on external servers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How do I export my GPX file from Strava or Garmin?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "On Strava Web, open any activity, click the three dots (…) and choose 'Export GPX'. On Garmin Connect, click the gear icon and select 'Export to GPX'. You can also export .gpx files directly from Apple Health, Wahoo, COROS, Komoot, and AllTrails."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the difference between the Free and $10 editions?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Free Social Edition ($0) is free forever and includes the gpx.photos hallmark logo badge (which you can position in any corner). The $10 Clean Master Edition completely removes all watermarks and delivers an unbranded, gallery-grade 300 DPI master download (up to 3840px wide)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Can I choose which corner the logo appears in?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. In the GPX Overlay settings, you can choose Top Left, Top Right, Bottom Left, or Bottom Right to ensure the logo never obscures runners, bikes, or scenic landmarks."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Will my photo be cropped to standard poster ratios?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. gpx.photos features zero-crop native aspect ratio support. Whatever ratio your camera captured (4:3, 3:2, 16:9, or smartphone vertical), the artwork canvas adapts to fit 100% of your original uncropped photo."
+            }
+          }
+        ]
+      }
+    ]
     </script>
     
     <link rel="icon" type="image/svg+xml" href="/src/assets/gpx-photos-emblem.svg" />

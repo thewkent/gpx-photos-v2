@@ -10,6 +10,8 @@ import { UploadTab } from './components/UploadTab';
 import { OverlayTab } from './components/OverlayTab';
 import { FulfillmentModal } from './components/FulfillmentModal';
 import { LandingPage } from './components/LandingPage';
+import { EventLandingPage } from './components/EventLandingPage';
+import { FEATURED_EVENTS, RIDE_JOBURG_EVENT, EventPreset } from './data/eventCatalog';
 import {
   SAMPLE_ACTIVITIES,
   DEFAULT_SPATIAL_CONFIG,
@@ -30,13 +32,26 @@ import { renderSpatialArtwork } from './utils/canvasRenderer';
 import { UploadCloud, Layers, Unlock, Download, Share2, Check } from 'lucide-react';
 
 export default function App() {
-  // Option C: Dedicated Landing Page vs Studio Workspace view state
-  const [currentView, setCurrentView] = useState<'landing' | 'studio'>(() => {
+  // Option C: Dedicated Landing Page vs Studio Workspace vs Event Page state
+  const [selectedEvent, setSelectedEvent] = useState<EventPreset | null>(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash;
+      if (hash.includes('#event/ride-joburg')) {
+        return RIDE_JOBURG_EVENT;
+      }
+    }
+    return null;
+  });
+
+  const [currentView, setCurrentView] = useState<'landing' | 'event' | 'studio'>(() => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname;
       const hash = window.location.hash;
       if (path.includes('/studio') || path.includes('/app') || hash === '#studio') {
         return 'studio';
+      }
+      if (hash.startsWith('#event/')) {
+        return 'event';
       }
     }
     return 'landing';
@@ -51,6 +66,15 @@ export default function App() {
       const path = window.location.pathname;
       if (path.includes('/studio') || path.includes('/app') || hash === '#studio') {
         setCurrentView('studio');
+      } else if (hash.startsWith('#event/')) {
+        const slug = hash.replace('#event/', '');
+        const found = FEATURED_EVENTS.find((e) => e.slug === slug);
+        if (found) {
+          setSelectedEvent(found);
+          setCurrentView('event');
+        } else {
+          setCurrentView('landing');
+        }
       } else {
         setCurrentView('landing');
       }
@@ -69,10 +93,35 @@ export default function App() {
 
   const navigateToLanding = () => {
     setCurrentView('landing');
+    setSelectedEvent(null);
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', window.location.pathname);
       window.scrollTo(0, 0);
     }
+  };
+
+  const navigateToEvent = (evt: EventPreset) => {
+    setSelectedEvent(evt);
+    setCurrentView('event');
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', `#event/${evt.slug}`);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // Loads an event's sample track, activity, and plaque layout straight into the Studio workspace
+  const openStudioWithEventPreset = (evt: EventPreset) => {
+    setCurrentActivity(evt.sampleActivity);
+    setPhotoUrl(evt.samplePhotoUrl);
+    setSpatialRoute((prev) => ({ ...prev, ...evt.spatialPreset }));
+    setHudCard((prev) => ({ ...prev, ...evt.hudPreset }));
+    if (evt.elevationPreset) {
+      setElevationConfig((prev) => ({ ...prev, ...evt.elevationPreset }));
+    }
+    if (evt.atmospherePreset) {
+      setAtmosphere((prev) => ({ ...prev, ...evt.atmospherePreset }));
+    }
+    navigateToStudio();
   };
 
   // Core Activity & Scene State
@@ -171,7 +220,23 @@ export default function App() {
 
   // If in Landing Mode, render the LandingPage
   if (currentView === 'landing') {
-    return <LandingPage onOpenStudio={navigateToStudio} />;
+    return (
+      <LandingPage
+        onOpenStudio={navigateToStudio}
+        onOpenEvent={navigateToEvent}
+      />
+    );
+  }
+
+  // If in Event Page Mode, render the EventLandingPage
+  if (currentView === 'event' && selectedEvent) {
+    return (
+      <EventLandingPage
+        event={selectedEvent}
+        onOpenStudioWithEvent={openStudioWithEventPreset}
+        onBackToMainLanding={navigateToLanding}
+      />
+    );
   }
 
   // Otherwise render the full Studio Workspace
