@@ -1,11 +1,11 @@
 import { StravaActivityData, PrintSize, SpatialRouteConfig, HudCardConfig, PhotoAtmosphereConfig, ElevationOverlayConfig } from '../types/poster';
 
 export const ASSETS = {
-  sydneyMarathon: '/src/assets/images/sydney_marathon_photo_1791548122129.jpg',
-  roadMarathoner: '/src/assets/images/road_marathoner_tarmac_1790956451444.jpg',
-  rideJoburgCyclist: '/src/assets/images/ride_joburg_cyclist_1790956433993.jpg',
-  trailSummit: '/src/assets/images/athlete_trail_summit_1790954952107.jpg',
-  roomMockup: '/src/assets/images/room_mockup_wall_1790954976364.jpg',
+  sydneyMarathon: '/assets/images/sydney_marathon_photo_1791548122129.jpg',
+  roadMarathoner: '/assets/images/road_marathoner_tarmac_1790956451444.jpg',
+  rideJoburgCyclist: '/assets/images/ride_joburg_cyclist_1790956433993.jpg',
+  trailSummit: '/assets/images/athlete_trail_summit_1790954952107.jpg',
+  roomMockup: '/assets/images/room_mockup_wall_1790954976364.jpg',
 };
 
 // Sydney Marathon Iconic Route Coordinates Loop
