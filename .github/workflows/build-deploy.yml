@@ -1,0 +1,46 @@
+name: Build and Release to Deploy Branch
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Compile frontend (dist/) and production backend (server.js)
+        run: npm run build
+
+      - name: Commit and push build artifacts to 'deploy' branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Force add dist and server.js regardless of .gitignore
+          git add -f dist/ server.js
+          
+          # Stash uncommitted changes including staged files
+          git checkout -B deploy
+          
+          git commit -m "build: automated production release [skip ci]" || echo "No changes to commit"
+          git push origin deploy --force

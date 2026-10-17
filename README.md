@@ -159,9 +159,33 @@ npm run dev
 # Run TypeScript lint check
 npm run lint
 
-# Build production bundle
+# Build production bundle (compiles frontend into dist/ and backend into server.js)
 npm run build
 ```
+
+---
+
+## Hostinger & GitHub Actions CI/CD Deployment
+
+The repository uses **GitHub Actions** to automate the build process in the cloud, offloading all CPU and memory build tasks from Hostinger.
+
+### How It Works
+1. When you push to the `main` branch, the workflow in `.github/workflows/build-deploy.yml` triggers automatically.
+2. A GitHub cloud runner checks out the repository, installs dependencies, compiles the Vite frontend (`dist/`), and compiles `server.ts` into a lightweight Node production executable (`server.js`).
+3. GitHub pushes the complete production-ready bundle to a dedicated **`deploy`** branch in your repository.
+
+### Hostinger Configuration (One-Time Setup)
+1. In your **Hostinger Node.js Application Dashboard**:
+   - **Repository Branch**: Select **`deploy`** (instead of `main`).
+   - **Build Command**: Leave **empty** (or set to `echo "Prebuilt by GitHub Actions"`).
+   - **Install Command**: `npm install --omit=dev --legacy-peer-deps` (only installs required runtime dependencies like Express).
+   - **Entry File**: `server.js`
+   - **Node.js Version**: 20 or 22
+2. **Workflow**:
+   - Make your changes on `main` and run `git push origin main`.
+   - Wait ~40 seconds for the GitHub Action to finish building.
+   - Hostinger pulls from the `deploy` branch and launches `server.js` cleanly in seconds.
+
 
 ---
 
