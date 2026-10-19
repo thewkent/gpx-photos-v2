@@ -28,19 +28,14 @@ jobs:
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      - name: Compile frontend (dist/) and production backend (server.js)
+      - name: Compile static frontend into dist/
         run: npm run build
 
-      - name: Commit and push build artifacts to 'deploy' branch
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Force add dist and server.js regardless of .gitignore
-          git add -f dist/ server.js
-          
-          # Stash uncommitted changes including staged files
-          git checkout -B deploy
-          
-          git commit -m "build: automated production release [skip ci]" || echo "No changes to commit"
-          git push origin deploy --force
+      - name: Publish dist/ folder contents to 'deploy' branch
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: deploy
+          FOLDER: dist
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MESSAGE: "build: static production release [skip ci]"
