@@ -137,8 +137,33 @@ export const EventLandingPage: React.FC<EventLandingPageProps> = ({
               className="w-full h-full object-cover"
             />
 
-            {/* Floating Glass Telemetry Plaque */}
-            <div className="absolute bottom-6 left-6 sm:bottom-10 sm:left-10 bg-zinc-950/85 backdrop-blur-xl border border-white/20 rounded-xl p-3.5 sm:p-5 shadow-2xl text-left max-w-[260px] sm:max-w-xs pointer-events-none">
+            {/* Simulated 3D Neon Laser Route (Right Middle) */}
+            <svg
+              className="absolute right-4 sm:right-10 top-1/2 -translate-y-1/2 w-[220px] sm:w-[320px] md:w-[380px] h-[220px] sm:h-[300px] pointer-events-none drop-shadow-[0_0_14px_rgba(252,82,0,0.85)]"
+              viewBox="0 0 100 100"
+              fill="none"
+            >
+              {/* Route shadow */}
+              <polyline
+                points="51,10 42,16 31,21 29,24 29,28 30,31 32,37 32,43 36,50 40,53 40,57 40,60 40,63 39,68 39,71 40,73 40,76 39,78 37,80 36,84 33,88 27,92 25,93 25,86 23,85 18,85 14,86 9,84 9,82 12,81 18,81 24,82 26,80 29,79 34,80 39,79 38,73 39,71 44,66 47,63 49,57 52,52 53,46 56,40 58,34 57,29 57,22 54,16 53,13 51,13 50,13 48,14 49,13 51,13 52,12 51,14"
+                stroke="rgba(0,0,0,0.6)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                transform="translate(2, 4)"
+              />
+              {/* Glowing Laser 3D Route */}
+              <polyline
+                points="51,10 42,16 31,21 29,24 29,28 30,31 32,37 32,43 36,50 40,53 40,57 40,60 40,63 39,68 39,71 40,73 40,76 39,78 37,80 36,84 33,88 27,92 25,93 25,86 23,85 18,85 14,86 9,84 9,82 12,81 18,81 24,82 26,80 29,79 34,80 39,79 38,73 39,71 44,66 47,63 49,57 52,52 53,46 56,40 58,34 57,29 57,22 54,16 53,13 51,13 50,13 48,14 49,13 51,13 52,12 51,14"
+                stroke="#FC5200"
+                strokeWidth="3.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+
+            {/* Floating Glass Telemetry Plaque (Left Middle) */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-10 bg-zinc-950/85 backdrop-blur-xl border border-white/20 rounded-xl p-3.5 sm:p-5 shadow-2xl text-left max-w-[240px] sm:max-w-xs pointer-events-none">
               <div className="flex items-center justify-between pb-2 border-b border-white/10">
                 <span className="text-[10px] sm:text-xs font-black tracking-wider text-white font-mono uppercase">
                   {event.hudPreset.headerTitle || event.name.toUpperCase()}
