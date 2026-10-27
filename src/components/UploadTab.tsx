@@ -289,7 +289,7 @@ export const UploadTab: React.FC<UploadTabProps> = ({
         </div>
 
         <p className="text-[11px] text-zinc-400 leading-relaxed">
-          Personalize the header title on your telemetry plaque (e.g. Mount Whitney Summit, Cape Epic, Tour du Mont Blanc, Berlin Marathon, or Sunday Gravel Ride).
+          Personalize the header title on your stats card (e.g. Mount Whitney Summit, Cape Epic, Tour du Mont Blanc, Berlin Marathon, or Sunday Gravel Ride).
         </p>
 
         <div className="p-3.5 bg-zinc-900/80 border border-white/10 rounded-xl space-y-3">

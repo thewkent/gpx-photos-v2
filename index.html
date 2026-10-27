@@ -3,24 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>gpx.photos — 3D Activity Telemetry & Digital Finish Art</title>
-    <meta name="description" content="gpx.photos transforms GPS activities, hikes, rides, runs, and outdoor photography into 3D laser-projected telemetry, floating glass plaques, and unbranded 4K digital finish art." />
-    <meta name="keywords" content="GPX photo overlay, 3D GPS route, Strava photo, Garmin route overlay, marathon finish photo, hike GPS track, cycling telemetry, race art" />
+    <title>Add Your Route Map &amp; Stats to Any Photo | gpx.photos</title>
+    <meta name="description" content="Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros." />
     <link rel="canonical" href="https://gpx.photos" />
     
-    <!-- OpenGraph Social Sharing -->
+    <!-- OpenGraph Social Sharing (High-impact 1200x630 JPG card for WhatsApp, Facebook, iMessage, LinkedIn) -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://gpx.photos" />
     <meta property="og:site_name" content="gpx.photos" />
-    <meta property="og:title" content="gpx.photos — 3D Activity Telemetry & Digital Finish Art" />
-    <meta property="og:description" content="Transform GPS activities, hikes, rides, runs, and outdoor photography into 3D laser-projected telemetry, floating glass plaques, and unbranded 4K digital finish art." />
-    <meta property="og:image" content="https://gpx.photos/src/assets/gpx-photos-logo.svg" />
+    <meta property="og:title" content="Add Your Route Map &amp; Stats to Any Photo | gpx.photos" />
+    <meta property="og:description" content="Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros." />
+    <meta property="og:image" content="https://gpx.photos/og-preview.jpg" />
+    <meta property="og:image:secure_url" content="https://gpx.photos/og-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="gpx.photos - Add GPS route map and workout stats to your marathon or cycling photo" />
     
     <!-- Twitter / X Cards -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="gpx.photos — 3D Activity Telemetry & Digital Finish Art" />
-    <meta name="twitter:description" content="Transform GPS activities, hikes, rides, runs, and outdoor photography into 3D laser-projected telemetry, floating glass plaques, and unbranded 4K digital finish art." />
-    <meta name="twitter:image" content="https://gpx.photos/src/assets/gpx-photos-logo.svg" />
+    <meta name="twitter:title" content="Add Your Route Map &amp; Stats to Any Photo | gpx.photos" />
+    <meta name="twitter:description" content="Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros." />
+    <meta name="twitter:image" content="https://gpx.photos/og-preview.jpg" />
+    <meta name="twitter:image:alt" content="gpx.photos - Add GPS route map and workout stats to your marathon or cycling photo" />
     
     <!-- Schema.org JSON-LD Structured Data (WebApplication + FAQPage for Search Rich Snippets & AI LLMs) -->
     <script type="application/ld+json">
@@ -33,15 +38,15 @@
         "applicationCategory": "MultimediaApplication",
         "operatingSystem": "All",
         "browserRequirements": "Requires JavaScript and HTML5 Canvas",
-        "description": "gpx.photos transforms GPS activity files (.gpx) and athlete photography from Garmin, Strava, Apple Watch, AllTrails, Wahoo, and COROS into 3D laser-projected telemetry routes, floating glass HUD plaques, and 4K digital finish art.",
-        "image": "https://gpx.photos/src/assets/images/sydney_marathon_photo_1791548122129.jpg",
+        "description": "gpx.photos lets runners, cyclists, and hikers overlay their GPS route map and workout telemetry directly onto race and outdoor photos in any browser without installing an app. 100% private and client-side.",
+        "image": "https://gpx.photos/og-preview.jpg",
         "offers": [
           {
             "@type": "Offer",
             "name": "Free Social Edition",
             "price": "0",
             "priceCurrency": "USD",
-            "description": "Full-resolution export with official gpx.photos hallmark watermark badge in any corner"
+            "description": "Free export with official gpx.photos watermark badge in any corner"
           },
           {
             "@type": "Offer",
@@ -52,12 +57,12 @@
           }
         ],
         "featureList": [
+          "No app installation required — works directly in desktop and mobile web browsers",
+          "100% Client-Side Privacy — photos and GPS tracks never leave your device",
           "Interactive 3D Ground Route Perspective Projection",
           "Floating Glassmorphism HUD Telemetry Plaque",
           "Synchronized Elevation Profile Ribbon with Peak Markers",
           "Zero-Crop Native Camera Aspect Ratio Support",
-          "100% Client-Side Privacy (Processed locally in browser memory without cloud storage)",
-          "Paystack Instant Unbranded 4K Master Export",
           "Compatible with Garmin, Strava, Apple Watch, Wahoo, COROS, Komoot, and AllTrails"
         ]
       },
@@ -67,18 +72,26 @@
         "mainEntity": [
           {
             "@type": "Question",
-            "name": "How does gpx.photos work?",
+            "name": "How do I add a GPS route map to my race photo?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Upload your activity photo (JPEG, PNG, HEIC) and your GPS activity file (.GPX from Garmin, Strava, Apple Watch, AllTrails, Wahoo, or COROS). The in-browser 3D engine projects your true GPS coordinates onto the ground perspective of your photo with custom laser routes, floating smoked glass HUD plaques, and synchronized elevation profiles."
+              "text": "Upload your photo (JPEG, PNG, HEIC) and your GPX activity file from Strava, Garmin, Apple Watch, or Coros. gpx.photos instantly projects your GPS course line and a workout stats plaque onto your image directly inside your web browser."
             }
           },
           {
             "@type": "Question",
-            "name": "Are my private race photos or GPS coordinates uploaded to any server?",
+            "name": "Do I need to install an app on my phone or computer?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "Never. 100% of the image processing, GPX parsing, and high-resolution rendering happens locally in your browser memory via native HTML5 Canvas 2D and 3D matrix math. Zero bytes of your photos or activity files are ever transmitted to or stored on external servers."
+              "text": "No. Unlike mobile apps like Picstat or RouteArt that require downloading an iPhone or Android app, gpx.photos runs 100% in any modern web browser on Mac, PC, Chromebook, tablet, and smartphone."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Are my photos or GPS files uploaded to private servers?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Never. All image processing, GPX calculation, and 4K canvas rendering happen 100% locally in your browser memory. Your personal photos and GPS data are never stored or seen by external servers."
             }
           },
           {
@@ -91,26 +104,10 @@
           },
           {
             "@type": "Question",
-            "name": "What is the difference between the Free and $10 editions?",
+            "name": "Can I edit high-resolution camera photos?",
             "acceptedAnswer": {
               "@type": "Answer",
-              "text": "The Free Social Edition ($0) is free forever and includes the gpx.photos hallmark logo badge (which you can position in any corner). The $10 Clean Master Edition completely removes all watermarks and delivers an unbranded, gallery-grade 300 DPI master download (up to 3840px wide)."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Can I choose which corner the logo appears in?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "Yes. In the GPX Overlay settings, you can choose Top Left, Top Right, Bottom Left, or Bottom Right to ensure the logo never obscures runners, bikes, or scenic landmarks."
-            }
-          },
-          {
-            "@type": "Question",
-            "name": "Will my photo be cropped to standard poster ratios?",
-            "acceptedAnswer": {
-              "@type": "Answer",
-              "text": "No. gpx.photos features zero-crop native aspect ratio support. Whatever ratio your camera captured (4:3, 3:2, 16:9, or smartphone vertical), the artwork canvas adapts to fit 100% of your original uncropped photo."
+              "text": "Yes. While mobile apps downscale photos to phone screen resolutions, gpx.photos handles full-resolution DSLR, mirrorless, and official race photographer files up to 4K resolution at 300 DPI."
             }
           }
         ]
@@ -118,15 +115,45 @@
     ]
     </script>
     
-    <link rel="icon" type="image/svg+xml" href="/src/assets/gpx-photos-emblem.svg" />
+    <link rel="icon" type="image/svg+xml" href="/assets/gpx-photos-emblem-YOUASDAC.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
     <script src="https://js.paystack.co/v1/inline.js"></script>
   </head>
   <body class="bg-[#111113] text-[#F3F3F5] antialiased selection:bg-amber-500/20 selection:text-amber-200">
-    <div id="root"></div>
+    <!-- Prerendered Static Semantic HTML for Search Engines, Social Bots, & AI Scrapers (Replaced by React on mount) -->
+    <div id="root">
+      <header style="padding: 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <h1 style="font-size: 28px; font-weight: 800; color: #fff; margin: 0 0 8px 0;">Add Your Route Map &amp; Stats to Any Photo</h1>
+        <p style="color: #a1a1aa; font-size: 16px; max-width: 650px; margin: 0 auto;">
+          Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros.
+        </p>
+      </header>
+      
+      <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: sans-serif; color: #d4d4d8; line-height: 1.6;">
+        <section style="margin-bottom: 40px;">
+          <h2 style="font-size: 22px; color: #fbbf24;">No App to Install. 100% Private in Your Browser.</h2>
+          <p>
+            Unlike mobile apps that require iPhone or Android installations and in-app subscriptions, <strong>gpx.photos</strong> runs entirely inside your web browser. Upload your full-resolution race photo and GPS track to create gallery-grade route art with custom 3D perspective maps, glass finish plaques, and synchronized elevation ribbons.
+          </p>
+          <ul>
+            <li><strong>Zero Server Uploads:</strong> Photos and GPS tracks are processed strictly in browser memory.</li>
+            <li><strong>High-Resolution 4K &amp; DSLR Support:</strong> Export at full camera resolution without downsampling.</li>
+            <li><strong>Multi-Platform Compatibility:</strong> Garmin, Strava, Apple Watch, Wahoo, COROS, Komoot, and AllTrails.</li>
+          </ul>
+        </section>
+
+        <section style="margin-bottom: 40px;">
+          <h2 style="font-size: 20px; color: #fff;">Popular Races &amp; Event Route Presets</h2>
+          <ul>
+            <li><a href="#event/ride-joburg" style="color: #fbbf24;">Virgin Active Ride Joburg (97 km Road Cycling Classic)</a></li>
+            <li><a href="#event/sydney-marathon" style="color: #fbbf24;">TCS Sydney Marathon (42.2 km Harbour Bridge &amp; Opera House)</a></li>
+          </ul>
+        </section>
+      </main>
+    </div>
+    
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

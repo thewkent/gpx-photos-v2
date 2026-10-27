@@ -225,7 +225,7 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
             <span className="text-xs font-semibold text-white">HUD Glassmorphism Intensity</span>
           </div>
           <span className="text-[10px] text-zinc-400 block">
-            Adjust blur & translucency of the telemetry plaque
+            Adjust blur & translucency of the stats card
           </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -737,10 +737,10 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
           {/* Header & Toggle */}
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Glass HUD Telemetry Plaque
+              Smoked Glass Stats Card
             </span>
             <label className="flex items-center gap-2 cursor-pointer">
-              <span className="text-[11px] text-zinc-400">Plaque Enabled</span>
+              <span className="text-[11px] text-zinc-400">Card Enabled</span>
               <input
                 type="checkbox"
                 checked={hudCard.enabled}
@@ -1065,7 +1065,7 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    Plaque Telemetry Values
+                    Stats Card Values (Distance, Time, Pace)
                   </span>
                   <button
                     onClick={() => setIsEditingStats(!isEditingStats)}

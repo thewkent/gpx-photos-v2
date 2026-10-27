@@ -67,14 +67,14 @@ export const RouteSelector: React.FC<RouteSelectorProps> = ({
       {/* Header & Quick Tab */}
       <div className="flex items-center justify-between">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-          Telemetry & Route
+          Route &amp; Stats
         </h3>
         <button
           onClick={() => setIsEditingStats(!isEditingStats)}
           className="flex items-center gap-1 text-[11px] font-medium text-amber-400 hover:text-amber-300 transition-colors"
         >
           <Edit3 className="w-3 h-3" />
-          <span>{isEditingStats ? 'Close Editor' : 'Edit Telemetry'}</span>
+          <span>{isEditingStats ? 'Close Editor' : 'Edit Stats'}</span>
         </button>
       </div>
 

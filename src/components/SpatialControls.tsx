@@ -155,12 +155,12 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. 3D GLASS HUD TELEMETRY PLAQUE */}
+      {/* 1. 3D GLASS STATS CARD */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 font-mono">
             <Layers className="w-3.5 h-3.5" />
-            <span>3D Glass HUD Plaque</span>
+            <span>3D Glass Stats Card</span>
           </h3>
           <label className="flex items-center gap-1 text-[11px] text-zinc-300 cursor-pointer">
             <input
@@ -441,12 +441,12 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
         )}
       </div>
 
-      {/* 2. PLAQUE STATS & TELEMETRY INPUT */}
+      {/* 2. WORKOUT & RACE STATS EDITOR */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-1.5 font-mono">
             <Sliders className="w-3.5 h-3.5" />
-            <span>Plaque Stats & Telemetry Input</span>
+            <span>Workout &amp; Race Stats</span>
           </h3>
           <button
             onClick={toggleUnitSystem}

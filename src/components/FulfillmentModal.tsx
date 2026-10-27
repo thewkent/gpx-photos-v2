@@ -193,7 +193,7 @@ export const FulfillmentModal: React.FC<FulfillmentModalProps> = ({
               <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-2.5 text-xs text-amber-200/90 leading-relaxed">
                 <Info className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                 <span>
-                  Official race and event photography packages charge <strong>$25 to $40+</strong> for a single JPEG download. For just <strong>$10</strong>, gpx.photos delivers an unbranded, high-definition 4K telemetry master of your finish.
+                  Official race and event photography packages charge <strong>$25 to $40+</strong> for a single JPEG download. For just <strong>$10</strong>, gpx.photos delivers an unbranded, high-definition 4K route art master of your finish.
                 </span>
               </div>
 

@@ -133,15 +133,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.08]">
-            Your Adventure Photos.{' '}
+            Put Your Route Map &amp; Stats{' '}
             <span className="bg-gradient-to-r from-amber-400 via-amber-200 to-orange-400 bg-clip-text text-transparent">
-              With 3D Route Telemetry.
+              on Any Race Photo.
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-zinc-300 max-w-2xl mx-auto leading-relaxed">
-            Overlay true GPS tracks from <strong>Garmin, Strava, or Apple Watch</strong> onto your photos.
-            Featuring 3D perspective laser routes, floating smoked glass HUD plaques, and synced elevation profiles.
+            Overlay your GPS route line, distance, elevation, and finish time from <strong>Garmin, Strava, or Apple Watch</strong> directly onto your photos.
+            Featuring 3D route maps, sleek smoked glass stats cards, and synced elevation profiles.
           </p>
 
           {/* Primary Action Buttons */}
@@ -633,7 +633,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Customizable glass HUD telemetry plaque</span>
+                  <span>Customizable glass stats card (time, distance, pace)</span>
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-emerald-400 shrink-0" />
