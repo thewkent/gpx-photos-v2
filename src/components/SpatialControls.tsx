@@ -50,10 +50,10 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
   ];
 
   const glassStyles = [
-    { id: 'smoked_glass', label: 'Smoked Glass (Subtle Tint)' },
-    { id: 'frosted_ice', label: 'Frosted Ice' },
+    { id: 'neon_rim', label: 'Neon Rim Glow (Default)' },
+    { id: 'transparent_line_color', label: 'Transparent (Line Color)' },
     { id: 'carbon_fiber', label: 'Carbon Fiber' },
-    { id: 'neon_rim', label: 'Neon Rim Glow' },
+    { id: 'frosted_ice', label: 'Frosted Ice' },
   ] as const;
 
   // Handle unit system conversion (Metric <-> Imperial)
@@ -315,7 +315,7 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
                 </div>
                 <input
                   type="range"
-                  min="0.05"
+                  min="0.0"
                   max="0.85"
                   step="0.01"
                   value={hudCard.posX}
@@ -331,7 +331,7 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
                 </div>
                 <input
                   type="range"
-                  min="0.05"
+                  min="0.0"
                   max="0.85"
                   step="0.01"
                   value={hudCard.posY}
@@ -347,8 +347,8 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
                 </div>
                 <input
                   type="range"
-                  min="0.75"
-                  max="1.35"
+                  min="0.6"
+                  max="2.5"
                   step="0.05"
                   value={hudCard.scale}
                   onChange={(e) => onUpdateHudCard({ scale: parseFloat(e.target.value) })}
@@ -405,8 +405,7 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
               </div>
 
               {(hudCard.showHeader !== false && hudCard.showStravaLogo !== false) && (
-                <div className="grid grid-cols-3 gap-2 pt-1">
-                  <div className="col-span-2">
+                  <div className="pt-1">
                     <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
                       Event / Race Title
                     </label>
@@ -422,20 +421,7 @@ export const SpatialControls: React.FC<SpatialControlsProps> = ({
                       className="w-full px-2 py-1 bg-zinc-950 border border-white/10 rounded text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-semibold"
                     />
                   </div>
-                  <div>
-                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                      Year
-                    </label>
-                    <input
-                      type="text"
-                      value={hudCard.headerYear ?? '2026'}
-                      onChange={(e) => onUpdateHudCard({ headerYear: e.target.value })}
-                      placeholder="2026"
-                      className="w-full px-2 py-1 bg-zinc-950 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
-                    />
-                  </div>
-                </div>
-              )}
+                )}
             </div>
           </div>
         )}

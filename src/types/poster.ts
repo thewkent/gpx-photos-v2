@@ -35,7 +35,7 @@ export interface ActivityData {
 
 export type StravaActivityData = ActivityData;
 
-export type RouteRenderMode = 'volumetric_tube' | 'laser_ribbon' | 'archival_shadow' | 'minimal_vector';
+export type RouteRenderMode = 'volumetric_tube' | 'molten_laser' | 'laser_ribbon' | 'archival_shadow' | 'minimal_vector';
 
 export interface SpatialRouteConfig {
   tiltAngle: number; // Ground perspective pitch: 0 to 85 deg (0 = flat 2D overhead)
@@ -68,11 +68,11 @@ export interface HudCustomMetric {
 
 export interface HudCardConfig {
   enabled: boolean;
-  style: 'smoked_glass' | 'frosted_ice' | 'carbon_fiber' | 'neon_rim';
+  style: 'neon_rim' | 'transparent_line_color' | 'carbon_fiber' | 'frosted_ice';
   orientation: HudOrientation;
-  posX: number; // normalized 0.05 to 0.95
-  posY: number; // normalized 0.05 to 0.95
-  scale: number; // 0.7 to 1.5
+  posX: number; // normalized 0.0 to 0.95
+  posY: number; // normalized 0.0 to 0.95
+  scale: number; // 0.6 to 2.5
   tiltY: number; // 3D perspective slant: -40 to 40 deg (0 = completely straight)
   tiltX: number; // 3D pitch: 0 to 45 deg (0 = completely straight)
   showHeader?: boolean; // Toggle header display

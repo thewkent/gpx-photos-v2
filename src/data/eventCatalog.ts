@@ -160,7 +160,7 @@ export const RIDE_JOBURG_EVENT: EventPreset = {
   },
   hudPreset: {
     enabled: true,
-    style: 'smoked_glass',
+    style: 'neon_rim',
     orientation: 'straight',
     posX: 0.20, // HUD Left Middle
     posY: 0.50, // Left Middle
@@ -169,7 +169,6 @@ export const RIDE_JOBURG_EVENT: EventPreset = {
     tiltX: 0,
     showHeader: true,
     headerTitle: 'VIRGIN ACTIVE RIDE JOBURG',
-    headerYear: '2026',
     showStravaLogo: true,
     opacity: 0.94,
     glassThickness: 3,
@@ -308,7 +307,7 @@ export const SYDNEY_MARATHON_EVENT: EventPreset = {
   },
   hudPreset: {
     enabled: true,
-    style: 'smoked_glass',
+    style: 'neon_rim',
     orientation: 'straight',
     posX: 0.16,
     posY: 0.76,
@@ -317,7 +316,6 @@ export const SYDNEY_MARATHON_EVENT: EventPreset = {
     tiltX: 0,
     showHeader: true,
     headerTitle: 'SYDNEY MARATHON',
-    headerYear: '2026',
     showStravaLogo: true,
     opacity: 0.94,
     glassThickness: 3,

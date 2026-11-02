@@ -527,6 +527,70 @@ function draw3DGroundRoute(
     strokePath(ctx, projectedPts);
     ctx.restore();
 
+  } else if (renderMode === 'molten_laser') {
+    // =========================================================================
+    // PASS: MOLTEN LASER CORE (PHOTOREALISTIC ROAD EMBER GLOW)
+    // Layer 1: Wide ground light spill / asphalt bloom ('screen')
+    // Layer 2: Medium saturated bloom
+    // Layer 3: Vibrant molten orange body
+    // Layer 4: Transition warm filament (golden electric amber)
+    // Layer 5: Blinding white-hot core wire
+    // =========================================================================
+    // 1A. Wide Ground Light Spill (Casts light onto pavement and snow)
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = baseColor;
+    ctx.lineWidth = lineW * 3.4;
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = Math.min(36, 26 * intensity);
+    ctx.globalAlpha = 0.48 * lumFactor;
+    strokePath(ctx, projectedPts);
+    ctx.restore();
+
+    // 1B. Medium Saturated Bloom
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = baseColor;
+    ctx.lineWidth = lineW * 2.0;
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = Math.min(20, 15 * intensity);
+    ctx.globalAlpha = 0.65 * lumFactor;
+    strokePath(ctx, projectedPts);
+    ctx.restore();
+
+    // 1C. Saturated Molten Ribbon Body
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = baseColor;
+    ctx.lineWidth = lineW * 1.25;
+    ctx.shadowColor = baseColor;
+    ctx.shadowBlur = Math.min(10, 8 * intensity);
+    ctx.globalAlpha = 0.98;
+    strokePath(ctx, projectedPts);
+    ctx.restore();
+
+    // 1D. Transition Warm Filament (Golden Yellow)
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = '#FFE082';
+    ctx.lineWidth = Math.max(1.2, lineW * 0.62);
+    ctx.shadowColor = '#FFD54F';
+    ctx.shadowBlur = 4;
+    ctx.globalAlpha = 0.95;
+    strokePath(ctx, projectedPts);
+    ctx.restore();
+
+    // 1E. White-Hot Filament Core
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = Math.max(0.8, lineW * 0.28);
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 5;
+    ctx.globalAlpha = 1.0;
+    strokePath(ctx, projectedPts);
+    ctx.restore();
+
   } else {
     // =========================================================================
     // PASS: MULTI-PASS NEON / EMISSIVE LASER RIBBON
@@ -626,6 +690,8 @@ function isHexDark(hex: string): boolean {
   return lum < 115;
 }
 
+
+
 /**
  * Draws the Photorealistic 3D Glass HUD Telemetry Plaque.
  * Clamps coordinates so it NEVER goes off screen, and supports both Straight and 3D Slanted orientations.
@@ -638,9 +704,18 @@ function drawGlassHUDCard(
   hudCard: HudCardConfig,
   glowColor: string
 ) {
-  const cardW = 270 * hudCard.scale;
-  const cardH = 182 * hudCard.scale;
-  const radius = 14 * hudCard.scale;
+  // Adaptive scaling for portrait photos:
+  // When height > width (e.g. 2:3, 9:16 vertical photos), the entire artwork is scaled down
+  // to fit viewport height on screen. We automatically apply a portrait scale compensation
+  // so the Statistics HUD card, typography, and badges remain bold, prominent, and legible.
+  const portraitCompensation = height > width
+    ? Math.min(2.1, Math.max(1.0, (height / width) * 0.95))
+    : 1.0;
+  const effectiveScale = (hudCard.scale || 1.0) * portraitCompensation;
+
+  const cardW = 270 * effectiveScale;
+  const cardH = 182 * effectiveScale;
+  const radius = 14 * effectiveScale;
 
   // Determine actual tilt angles based on orientation
   let tiltY = 0;
@@ -656,23 +731,21 @@ function drawGlassHUDCard(
     tiltY = -16;
     tiltX = 18;
   } else {
-    // Custom user sliders
-    tiltY = hudCard.tiltY;
-    tiltX = hudCard.tiltX;
+    tiltY = hudCard.tiltY || 0;
+    tiltX = hudCard.tiltX || 0;
   }
 
-  // Safe boundary clamping: compute transformed footprint so it NEVER clips off screen
-  const padding = 20;
+  // Safe boundary clamping: allows horizontal and vertical alignment all the way to 0.0 (flush edges)
   const maxSkewXOffset = Math.abs(Math.tan((-tiltY * Math.PI) / 180) * cardH);
-  const minX = padding + (tiltY > 0 ? maxSkewXOffset : 0);
-  const maxX = width - cardW - padding - (tiltY < 0 ? maxSkewXOffset : 0);
-  const minY = padding;
-  const maxY = height - cardH - padding;
+  const minX = (tiltY > 0 ? maxSkewXOffset : 0);
+  const maxX = width - cardW - (tiltY < 0 ? maxSkewXOffset : 0);
+  const minY = 0;
+  const maxY = height - cardH;
 
   const rawX = width * hudCard.posX;
   const rawY = height * hudCard.posY;
 
-  // Clamp within canvas boundaries
+  // Clamp within canvas boundaries (supports full 0.0 left alignment)
   const originX = Math.max(minX, Math.min(maxX, rawX));
   const originY = Math.max(minY, Math.min(maxY, rawY));
 
@@ -686,125 +759,125 @@ function drawGlassHUDCard(
     ctx.transform(1, Math.tan(skewYRad), Math.tan(skewXRad), 0.94, 0, 0);
   }
 
-  // 1. SOFT AMBIENT GROUND CONTACT SHADOW
-  ctx.save();
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-  ctx.shadowBlur = 28 * hudCard.scale;
-  ctx.shadowOffsetX = 10 * hudCard.scale;
-  ctx.shadowOffsetY = 24 * hudCard.scale;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-  roundRect(ctx, 4, 8, cardW, cardH, radius);
-  ctx.fill();
-  ctx.restore();
+  const isTransparent = hudCard.style === 'transparent_line_color';
 
-  // 2. 3D GLASS THICKNESS REACTION EDGE (Beveled Glass Depth)
-  const thickness = (hudCard.glassThickness || 3) * hudCard.scale;
-  if (thickness > 0) {
+  if (!isTransparent) {
+    // 1. SOFT AMBIENT GROUND CONTACT SHADOW
     ctx.save();
-    // Glass edge tint (gives physical depth to the acrylic slab)
-    ctx.fillStyle = hudCard.style === 'frosted_ice'
-      ? 'rgba(200, 220, 235, 0.35)'
-      : 'rgba(8, 10, 14, 0.9)';
-    roundRect(ctx, thickness * 0.8, thickness * 1.2, cardW, cardH, radius);
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 28 * effectiveScale;
+    ctx.shadowOffsetX = 10 * effectiveScale;
+    ctx.shadowOffsetY = 24 * effectiveScale;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    roundRect(ctx, 4, 8, cardW, cardH, radius);
     ctx.fill();
+    ctx.restore();
+
+    // 2. 3D GLASS THICKNESS REACTION EDGE (Beveled Glass Depth)
+    const thickness = (hudCard.glassThickness || 3) * effectiveScale;
+    if (thickness > 0) {
+      ctx.save();
+      // Glass edge tint (gives physical depth to the acrylic slab)
+      ctx.fillStyle = hudCard.style === 'frosted_ice'
+        ? 'rgba(200, 220, 235, 0.35)'
+        : 'rgba(8, 10, 14, 0.9)';
+      roundRect(ctx, thickness * 0.8, thickness * 1.2, cardW, cardH, radius);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 3. MAIN GLASS SLAB BODY (GLASSMORPHISM INTENSITY & TRANSLUCENCY)
+    ctx.save();
+    const hudGlassIntensity = hudCard.glassmorphismIntensity !== undefined
+      ? Math.max(0, Math.min(100, hudCard.glassmorphismIntensity)) / 100
+      : 0.75;
+
+    // Modulate translucency dynamically based on glassmorphism intensity slider
+    const computedAlpha = Math.max(0.18, Math.min(1.0, 0.20 + hudGlassIntensity * 0.78)) * (hudCard.opacity ?? 1.0);
+    ctx.globalAlpha = computedAlpha;
+
+    // Glass Face Gradient modulated by glassmorphism intensity
+    const glassGrad = ctx.createLinearGradient(0, 0, cardW * 0.9, cardH);
+    if (hudCard.style === 'frosted_ice') {
+      const iceAlpha1 = (0.15 + hudGlassIntensity * 0.40).toFixed(3);
+      const iceAlpha2 = (0.10 + hudGlassIntensity * 0.30).toFixed(3);
+      const iceAlpha3 = (0.12 + hudGlassIntensity * 0.35).toFixed(3);
+      glassGrad.addColorStop(0, `rgba(240, 245, 255, ${iceAlpha1})`);
+      glassGrad.addColorStop(0.5, `rgba(210, 225, 245, ${iceAlpha2})`);
+      glassGrad.addColorStop(1, `rgba(180, 205, 235, ${iceAlpha3})`);
+    } else if (hudCard.style === 'carbon_fiber') {
+      const cfAlpha1 = (0.75 + hudGlassIntensity * 0.22).toFixed(3);
+      const cfAlpha2 = (0.78 + hudGlassIntensity * 0.20).toFixed(3);
+      const cfAlpha3 = (0.80 + hudGlassIntensity * 0.18).toFixed(3);
+      glassGrad.addColorStop(0, `rgba(18, 18, 20, ${cfAlpha1})`);
+      glassGrad.addColorStop(0.5, `rgba(14, 14, 16, ${cfAlpha2})`);
+      glassGrad.addColorStop(1, `rgba(10, 10, 12, ${cfAlpha3})`);
+    } else {
+      // Smoked Glass / Neon Rim
+      const smokeAlpha1 = (0.35 + hudGlassIntensity * 0.58).toFixed(3);
+      const smokeAlpha2 = (0.40 + hudGlassIntensity * 0.54).toFixed(3);
+      const smokeAlpha3 = (0.45 + hudGlassIntensity * 0.51).toFixed(3);
+      glassGrad.addColorStop(0, `rgba(26, 28, 34, ${smokeAlpha1})`);
+      glassGrad.addColorStop(0.5, `rgba(16, 18, 22, ${smokeAlpha2})`);
+      glassGrad.addColorStop(1, `rgba(10, 12, 15, ${smokeAlpha3})`);
+    }
+
+    ctx.fillStyle = glassGrad;
+    roundRect(ctx, 0, 0, cardW, cardH, radius);
+    ctx.fill();
+
+    // Fine carbon mesh or micro-grid texture inside glass
+    ctx.save();
+    ctx.clip(); // clip within rounded rect
+    ctx.strokeStyle = hudCard.style === 'carbon_fiber'
+      ? 'rgba(255, 255, 255, 0.06)'
+      : `rgba(255, 255, 255, ${(0.015 + hudGlassIntensity * 0.035).toFixed(3)})`;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let y = 0; y < cardH; y += 4.5 * effectiveScale) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(cardW, y);
+    }
+    ctx.stroke();
+
+    // Diagonal Specular Glass Reflection Sheen (gives high-end glass realism)
+    const sheenGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
+    const sheenAlpha = 0.06 + hudGlassIntensity * 0.18;
+    sheenGrad.addColorStop(0, `rgba(255, 255, 255, ${sheenAlpha.toFixed(3)})`);
+    sheenGrad.addColorStop(0.3, `rgba(255, 255, 255, ${(sheenAlpha * 0.35).toFixed(3)})`);
+    sheenGrad.addColorStop(0.31, 'rgba(255, 255, 255, 0)');
+    sheenGrad.addColorStop(1, `rgba(255, 255, 255, ${(sheenAlpha * 0.2).toFixed(3)})`);
+    ctx.fillStyle = sheenGrad;
+    ctx.fillRect(0, 0, cardW, cardH);
+    ctx.restore();
+
+    // 4. POLISHED SPECULAR GLASS RIM BEVEL
+    ctx.save();
+    const rimGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
+    if (hudCard.style === 'neon_rim') {
+      rimGrad.addColorStop(0, '#FFFFFF');
+      rimGrad.addColorStop(0.3, glowColor);
+      rimGrad.addColorStop(0.8, 'rgba(0, 0, 0, 0.5)');
+      rimGrad.addColorStop(1, glowColor);
+      ctx.strokeStyle = rimGrad;
+      ctx.lineWidth = 2.5 * effectiveScale;
+    } else {
+      rimGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)'); // bright specular top-left
+      rimGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.35)');
+      rimGrad.addColorStop(0.7, 'rgba(0, 0, 0, 0.45)');
+      rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
+      ctx.strokeStyle = rimGrad;
+      ctx.lineWidth = 2 * effectiveScale;
+    }
+    roundRect(ctx, 0, 0, cardW, cardH, radius);
+    ctx.stroke();
     ctx.restore();
   }
 
-  // 3. MAIN GLASS SLAB BODY (GLASSMORPHISM INTENSITY & TRANSLUCENCY)
-  ctx.save();
-  const hudGlassIntensity = hudCard.glassmorphismIntensity !== undefined
-    ? Math.max(0, Math.min(100, hudCard.glassmorphismIntensity)) / 100
-    : 0.75;
-
-  // Modulate translucency dynamically based on glassmorphism intensity slider:
-  // 0% = 0.20 (crystal clear / ultra translucent)
-  // 50% = 0.60 (balanced modern frosted glass)
-  // 100% = 0.98 (rich smoked glass / heavy frosted acrylic)
-  const computedAlpha = Math.max(0.18, Math.min(1.0, 0.20 + hudGlassIntensity * 0.78)) * (hudCard.opacity ?? 1.0);
-  ctx.globalAlpha = computedAlpha;
-
-  // Glass Face Gradient modulated by glassmorphism intensity
-  const glassGrad = ctx.createLinearGradient(0, 0, cardW * 0.9, cardH);
-  if (hudCard.style === 'frosted_ice') {
-    const iceAlpha1 = (0.15 + hudGlassIntensity * 0.40).toFixed(3);
-    const iceAlpha2 = (0.10 + hudGlassIntensity * 0.30).toFixed(3);
-    const iceAlpha3 = (0.12 + hudGlassIntensity * 0.35).toFixed(3);
-    glassGrad.addColorStop(0, `rgba(240, 245, 255, ${iceAlpha1})`);
-    glassGrad.addColorStop(0.5, `rgba(210, 225, 245, ${iceAlpha2})`);
-    glassGrad.addColorStop(1, `rgba(180, 205, 235, ${iceAlpha3})`);
-  } else if (hudCard.style === 'carbon_fiber') {
-    const cfAlpha1 = (0.75 + hudGlassIntensity * 0.22).toFixed(3);
-    const cfAlpha2 = (0.78 + hudGlassIntensity * 0.20).toFixed(3);
-    const cfAlpha3 = (0.80 + hudGlassIntensity * 0.18).toFixed(3);
-    glassGrad.addColorStop(0, `rgba(18, 18, 20, ${cfAlpha1})`);
-    glassGrad.addColorStop(0.5, `rgba(14, 14, 16, ${cfAlpha2})`);
-    glassGrad.addColorStop(1, `rgba(10, 10, 12, ${cfAlpha3})`);
-  } else {
-    // Smoked Glass / Neon Rim
-    const smokeAlpha1 = (0.35 + hudGlassIntensity * 0.58).toFixed(3);
-    const smokeAlpha2 = (0.40 + hudGlassIntensity * 0.54).toFixed(3);
-    const smokeAlpha3 = (0.45 + hudGlassIntensity * 0.51).toFixed(3);
-    glassGrad.addColorStop(0, `rgba(26, 28, 34, ${smokeAlpha1})`);
-    glassGrad.addColorStop(0.5, `rgba(16, 18, 22, ${smokeAlpha2})`);
-    glassGrad.addColorStop(1, `rgba(10, 12, 15, ${smokeAlpha3})`);
-  }
-
-  ctx.fillStyle = glassGrad;
-  roundRect(ctx, 0, 0, cardW, cardH, radius);
-  ctx.fill();
-
-  // Fine carbon mesh or micro-grid texture inside glass
-  ctx.save();
-  ctx.clip(); // clip within rounded rect
-  ctx.strokeStyle = hudCard.style === 'carbon_fiber'
-    ? 'rgba(255, 255, 255, 0.06)'
-    : `rgba(255, 255, 255, ${(0.015 + hudGlassIntensity * 0.035).toFixed(3)})`;
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let y = 0; y < cardH; y += 4.5 * hudCard.scale) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(cardW, y);
-  }
-  ctx.stroke();
-
-  // Diagonal Specular Glass Reflection Sheen (gives high-end glass realism)
-  const sheenGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
-  const sheenAlpha = 0.06 + hudGlassIntensity * 0.18;
-  sheenGrad.addColorStop(0, `rgba(255, 255, 255, ${sheenAlpha.toFixed(3)})`);
-  sheenGrad.addColorStop(0.3, `rgba(255, 255, 255, ${(sheenAlpha * 0.35).toFixed(3)})`);
-  sheenGrad.addColorStop(0.31, 'rgba(255, 255, 255, 0)');
-  sheenGrad.addColorStop(1, `rgba(255, 255, 255, ${(sheenAlpha * 0.2).toFixed(3)})`);
-  ctx.fillStyle = sheenGrad;
-  ctx.fillRect(0, 0, cardW, cardH);
-  ctx.restore();
-
-  // 4. POLISHED SPECULAR GLASS RIM BEVEL
-  ctx.save();
-  const rimGrad = ctx.createLinearGradient(0, 0, cardW, cardH);
-  if (hudCard.style === 'neon_rim') {
-    rimGrad.addColorStop(0, '#FFFFFF');
-    rimGrad.addColorStop(0.3, glowColor);
-    rimGrad.addColorStop(0.8, 'rgba(0, 0, 0, 0.5)');
-    rimGrad.addColorStop(1, glowColor);
-    ctx.strokeStyle = rimGrad;
-    ctx.lineWidth = 2.5 * hudCard.scale;
-  } else {
-    rimGrad.addColorStop(0, 'rgba(255, 255, 255, 0.9)'); // bright specular top-left
-    rimGrad.addColorStop(0.3, 'rgba(255, 255, 255, 0.35)');
-    rimGrad.addColorStop(0.7, 'rgba(0, 0, 0, 0.45)');
-    rimGrad.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
-    ctx.strokeStyle = rimGrad;
-    ctx.lineWidth = 2 * hudCard.scale;
-  }
-  roundRect(ctx, 0, 0, cardW, cardH, radius);
-  ctx.stroke();
-  ctx.restore();
-
-  // 5. ACTIVITY / ROUTE NAME & YEAR BRAND HEADER (USER CUSTOMIZABLE)
+  // 5. ACTIVITY / ROUTE NAME BRAND HEADER (USER CUSTOMIZABLE)
   const showHeader = hudCard.showHeader !== false && hudCard.showStravaLogo !== false;
   if (showHeader) {
     const rawTitle = (hudCard.headerTitle || activity.name || 'EXPEDITION TELEMETRY').toUpperCase();
-    const eventYear = (hudCard.headerYear || '').toUpperCase();
 
     // Determine high-contrast letter color adapted to the HUD background
     const isLightCard = hudCard.style === 'frosted_ice';
@@ -812,40 +885,40 @@ function drawGlassHUDCard(
 
     let titleColor = '#FC5200';
     let titleShadowColor = 'rgba(252, 82, 0, 0.5)';
-    let yearColor = 'rgba(240, 240, 245, 0.90)';
     let dividerColor = 'rgba(255, 255, 255, 0.12)';
 
-    if (isLightCard) {
+    if (isTransparent) {
+      // 100% Transparent Style: text uses the map line color!
+      titleColor = glowColor || '#FC5200';
+      titleShadowColor = 'rgba(0, 0, 0, 0.85)';
+      dividerColor = glowColor ? `${glowColor}66` : 'rgba(255, 255, 255, 0.3)';
+    } else if (isLightCard) {
       // Light Frosted Ice Background: letters MUST be dark and legible
       titleColor = colorIsDark && glowColor !== '#000000' ? glowColor : '#0F172A';
       titleShadowColor = 'transparent';
-      yearColor = 'rgba(15, 23, 42, 0.75)';
       dividerColor = 'rgba(15, 23, 42, 0.15)';
     } else {
-      // Dark Backgrounds (Smoked Glass, Carbon Fiber, Neon Rim): letters MUST NEVER be dark
+      // Dark Backgrounds (Carbon Fiber, Neon Rim)
       if (colorIsDark) {
-        // If route color is black or very dark, render title in crisp brilliant white
         titleColor = '#FFFFFF';
         titleShadowColor = 'rgba(255, 255, 255, 0.35)';
       } else {
         titleColor = glowColor || '#FC5200';
         titleShadowColor = glowColor || 'rgba(252, 82, 0, 0.6)';
       }
-      yearColor = 'rgba(240, 240, 245, 0.90)';
       dividerColor = 'rgba(255, 255, 255, 0.12)';
     }
 
     ctx.save();
     ctx.fillStyle = titleColor;
     ctx.shadowColor = titleShadowColor;
-    ctx.shadowBlur = isLightCard ? 0 : 6 * hudCard.scale;
-    ctx.font = `italic 900 ${18 * hudCard.scale}px "Plus Jakarta Sans", sans-serif`;
+    ctx.shadowBlur = isLightCard ? 0 : 6 * effectiveScale;
+    ctx.font = `italic 900 ${18 * effectiveScale}px "Plus Jakarta Sans", sans-serif`;
     ctx.letterSpacing = '0.04em';
     ctx.textAlign = 'left';
 
-    // Calculate available width for event title based on whether year is shown
-    const yearWidth = eventYear ? 55 * hudCard.scale : 0;
-    const maxTitleWidth = cardW - 40 * hudCard.scale - yearWidth;
+    // Calculate available width for event title across full card width
+    const maxTitleWidth = cardW - 40 * effectiveScale;
 
     let displayTitle = rawTitle;
     while (ctx.measureText(displayTitle).width > maxTitleWidth && displayTitle.length > 4) {
@@ -855,24 +928,16 @@ function drawGlassHUDCard(
       displayTitle = displayTitle.trim() + '…';
     }
 
-    ctx.fillText(displayTitle, 20 * hudCard.scale, 35 * hudCard.scale);
+    ctx.fillText(displayTitle, 20 * effectiveScale, 35 * effectiveScale);
     ctx.shadowBlur = 0;
-
-    // Optional Year Tag on the right side of header
-    if (eventYear) {
-      ctx.font = `bold ${13 * hudCard.scale}px "JetBrains Mono", monospace`;
-      ctx.fillStyle = yearColor;
-      ctx.textAlign = 'right';
-      ctx.fillText(eventYear, cardW - 20 * hudCard.scale, 35 * hudCard.scale);
-    }
     ctx.restore();
 
     // Hairline divider under header with adapted contrast
     ctx.strokeStyle = dividerColor;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 1.2;
     ctx.beginPath();
-    ctx.moveTo(20 * hudCard.scale, 47 * hudCard.scale);
-    ctx.lineTo(cardW - 20 * hudCard.scale, 47 * hudCard.scale);
+    ctx.moveTo(20 * effectiveScale, 47 * effectiveScale);
+    ctx.lineTo(cardW - 20 * effectiveScale, 47 * effectiveScale);
     ctx.stroke();
   }
 
@@ -886,30 +951,48 @@ function drawGlassHUDCard(
         { label: activity.sport === 'cycling' ? 'Ave Speed:' : 'Ave Pace:', value: activity.avgPaceOrSpeed },
       ];
 
-  const rowStartY = 70 * hudCard.scale;
-  const rowGap = 25 * hudCard.scale;
+  const rowStartY = 70 * effectiveScale;
+  const rowGap = 25 * effectiveScale;
 
   rows.forEach((row, i) => {
     const curY = rowStartY + i * rowGap;
 
     // Stat Label (Clean Sans)
-    ctx.font = `500 ${12.5 * hudCard.scale}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = hudCard.style === 'frosted_ice'
-      ? 'rgba(20, 25, 35, 0.85)'
-      : 'rgba(230, 230, 235, 0.85)';
+    ctx.font = `600 ${12.5 * effectiveScale}px "Plus Jakarta Sans", sans-serif`;
+    if (isTransparent) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.90)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.85)';
+      ctx.shadowBlur = 4 * effectiveScale;
+    } else {
+      ctx.fillStyle = hudCard.style === 'frosted_ice'
+        ? 'rgba(20, 25, 35, 0.85)'
+        : 'rgba(230, 230, 235, 0.85)';
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
     ctx.textAlign = 'left';
-    ctx.fillText(row.label, 20 * hudCard.scale, curY);
+    ctx.fillText(row.label, 20 * effectiveScale, curY);
 
     // Stat Value (Bold Tabular Monospace)
-    ctx.font = `bold ${13.5 * hudCard.scale}px "JetBrains Mono", monospace`;
-    ctx.fillStyle = hudCard.style === 'frosted_ice'
-      ? '#0F172A'
-      : '#FFFFFF';
+    ctx.font = `bold ${13.5 * effectiveScale}px "JetBrains Mono", monospace`;
+    if (isTransparent) {
+      ctx.fillStyle = glowColor || '#FC5200'; // Uses map line color!
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.90)';
+      ctx.shadowBlur = 5 * effectiveScale;
+    } else {
+      ctx.fillStyle = hudCard.style === 'frosted_ice'
+        ? '#0F172A'
+        : '#FFFFFF';
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
     ctx.textAlign = 'right';
-    ctx.fillText(row.value, cardW - 20 * hudCard.scale, curY);
+    ctx.fillText(row.value, cardW - 20 * effectiveScale, curY);
   });
 
-  ctx.restore(); // end glass body
+  if (!isTransparent) {
+    ctx.restore(); // end glass body
+  }
   ctx.restore(); // end 3D transform
 }
 
@@ -966,10 +1049,16 @@ function drawElevationProfile(
     ];
   }
 
+  // Adaptive scaling for portrait photos:
+  // When height > width, scale the elevation profile height and typography so it remains legible and prominent.
+  const portraitFactor = height > width
+    ? Math.min(2.1, Math.max(1.0, (height / width) * 1.0))
+    : 1.0;
+
   const profW = width * (config.widthPercent || 0.88);
   const startX = (width - profW) / 2;
   const baseY = height * config.posY;
-  const profH = config.height || 52;
+  const profH = (config.height || 52) * portraitFactor;
   const topY = baseY - profH;
 
   let minEle = Infinity;
@@ -1036,36 +1125,23 @@ function drawElevationProfile(
     ctx.restore();
   }
 
-  // 3. RIDGE LINE (Linked directly to spatialRoute.lineWidth and glowColor)
-  ctx.save();
-  ctx.strokeStyle = isBlack ? '#000000' : glowColor;
-  ctx.lineWidth = lineW;
-  if (hasGlow) {
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = Math.min(16, 8 * (spatialRoute.glowIntensity ?? 0.85));
-  } else if (isBlack && spatialRoute.glowEnabled !== false) {
-    ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
-    ctx.shadowBlur = 2;
-  } else {
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-  }
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  points.forEach((pt, i) => {
-    if (i === 0) ctx.moveTo(pt.x, pt.y);
-    else ctx.lineTo(pt.x, pt.y);
-  });
-  ctx.stroke();
-  ctx.restore();
+  // 3. RIDGE LINE (Linked directly to spatialRoute.lineWidth, glowColor, and renderMode)
+  const isMolten = spatialRoute.renderMode === 'molten_laser' && !isBlack;
 
-  // 4. CORE HIGHLIGHT FILAMENT (Only for colored / light lines, omitted for black)
-  if (!isBlack) {
+  if (isMolten) {
+    // =========================================================================
+    // MOLTEN LASER RIDGE PASSES (Synchronized with 3D map route)
+    // =========================================================================
+    // 3A. Wide Ambient Glow Bloom ('screen')
     ctx.save();
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = Math.max(0.8, lineW * 0.3);
-    ctx.globalAlpha = hasGlow ? 0.9 : 0.75;
+    ctx.globalCompositeOperation = 'screen';
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = lineW * 2.8;
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = Math.min(30, 20 * (spatialRoute.glowIntensity ?? 1));
+    ctx.globalAlpha = 0.52;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.beginPath();
     points.forEach((pt, i) => {
       if (i === 0) ctx.moveTo(pt.x, pt.y);
@@ -1073,51 +1149,147 @@ function drawElevationProfile(
     });
     ctx.stroke();
     ctx.restore();
+
+    // 3B. Rich Saturated Molten Ribbon Body
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = glowColor;
+    ctx.lineWidth = lineW * 1.25;
+    ctx.shadowColor = glowColor;
+    ctx.shadowBlur = Math.min(12, 8 * (spatialRoute.glowIntensity ?? 1));
+    ctx.globalAlpha = 0.98;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+
+    // 3C. Transition Warm Golden Filament
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = '#FFE082';
+    ctx.lineWidth = Math.max(1.2, lineW * 0.6);
+    ctx.shadowColor = '#FFD54F';
+    ctx.shadowBlur = 4;
+    ctx.globalAlpha = 0.95;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+
+    // 3D. White-Hot Filament Core
+    ctx.save();
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = Math.max(0.8, lineW * 0.28);
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 4;
+    ctx.globalAlpha = 1.0;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+
+  } else {
+    // STANDARD / ARCHIVAL RIDGE LINE
+    ctx.save();
+    ctx.strokeStyle = isBlack ? '#000000' : glowColor;
+    ctx.lineWidth = lineW;
+    if (hasGlow) {
+      ctx.shadowColor = glowColor;
+      ctx.shadowBlur = Math.min(16, 8 * (spatialRoute.glowIntensity ?? 0.85));
+    } else if (isBlack && spatialRoute.glowEnabled !== false) {
+      ctx.shadowColor = 'rgba(255, 255, 255, 0.4)';
+      ctx.shadowBlur = 2;
+    } else {
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    points.forEach((pt, i) => {
+      if (i === 0) ctx.moveTo(pt.x, pt.y);
+      else ctx.lineTo(pt.x, pt.y);
+    });
+    ctx.stroke();
+    ctx.restore();
+
+    // 4. CORE HIGHLIGHT FILAMENT (Only for colored / light lines, omitted for black)
+    if (!isBlack) {
+      ctx.save();
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = Math.max(0.8, lineW * 0.3);
+      ctx.globalAlpha = hasGlow ? 0.9 : 0.75;
+      ctx.beginPath();
+      points.forEach((pt, i) => {
+        if (i === 0) ctx.moveTo(pt.x, pt.y);
+        else ctx.lineTo(pt.x, pt.y);
+      });
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 
   // 5. PEAK MARKER & LABELS
   if (config.showLabels && points.length > 0) {
     const peakPt = points[peakIdx];
+    const labelFontSize = Math.round(9.5 * portraitFactor);
+    const bottomOffset = Math.round(14 * portraitFactor);
 
     // Peak Dot Marker
     ctx.save();
     ctx.fillStyle = isBlack ? '#000000' : '#FFFFFF';
     if (hasGlow) {
       ctx.shadowColor = isBlack ? 'rgba(255,255,255,0.6)' : glowColor;
-      ctx.shadowBlur = 4;
+      ctx.shadowBlur = Math.round(4 * portraitFactor);
     }
     ctx.beginPath();
-    ctx.arc(peakPt.x, peakPt.y, Math.max(2.5, lineW * 0.75), 0, Math.PI * 2);
+    ctx.arc(peakPt.x, peakPt.y, Math.max(2.5 * portraitFactor, lineW * 0.75), 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     // Peak Label
     ctx.save();
-    ctx.font = '600 9px "JetBrains Mono", monospace';
+    ctx.font = `600 ${labelFontSize}px "JetBrains Mono", monospace`;
     ctx.fillStyle = isBlack ? '#000000' : '#FFFFFF';
     ctx.textAlign = 'center';
     ctx.shadowColor = isBlack ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 3;
-    ctx.fillText(`▲ ${Math.round(maxEle)}m`, peakPt.x, Math.max(16, peakPt.y - 6));
+    ctx.shadowBlur = Math.round(3 * portraitFactor);
+    ctx.fillText(`▲ ${Math.round(maxEle)}m`, peakPt.x, Math.max(16, peakPt.y - Math.round(7 * portraitFactor)));
     ctx.restore();
 
     // Left Start Elevation & Right Distance
     ctx.save();
-    ctx.font = '500 9px "JetBrains Mono", monospace';
+    ctx.font = `500 ${labelFontSize}px "JetBrains Mono", monospace`;
     ctx.fillStyle = isBlack ? 'rgba(0, 0, 0, 0.75)' : 'rgba(255, 255, 255, 0.7)';
     ctx.shadowColor = isBlack ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.8)';
     ctx.shadowBlur = 2;
     ctx.textAlign = 'left';
-    ctx.fillText(`${Math.round(points[0].ele)}m`, startX, baseY + 12);
+    ctx.fillText(`${Math.round(points[0].ele)}m`, startX, baseY + bottomOffset);
 
     ctx.textAlign = 'right';
-    ctx.fillText(`${activity.distanceKm} km`, startX + profW, baseY + 12);
+    ctx.fillText(`${activity.distanceKm} km`, startX + profW, baseY + bottomOffset);
 
     // Center Elevation Gain Badge
     ctx.textAlign = 'center';
     ctx.fillStyle = isBlack ? '#000000' : glowColor;
-    ctx.font = 'bold 9px "JetBrains Mono", monospace';
-    ctx.fillText(`▲ +${activity.elevationGainM.toLocaleString()}m ELEVATION GAIN`, startX + profW / 2, baseY + 12);
+    ctx.font = `bold ${labelFontSize}px "JetBrains Mono", monospace`;
+    ctx.fillText(`▲ +${activity.elevationGainM.toLocaleString()}m ELEVATION GAIN`, startX + profW / 2, baseY + bottomOffset);
     ctx.restore();
   }
 
@@ -1293,10 +1465,14 @@ function drawGpxPhotosWatermark(
 ) {
   ctx.save();
 
+  const portraitFactor = height > width
+    ? Math.min(1.8, Math.max(1.0, (height / width) * 0.92))
+    : 1.0;
+
   // Hallmark badge dimensions
-  const badgeW = 265;
-  const badgeH = 58;
-  const margin = 28;
+  const badgeW = 265 * portraitFactor;
+  const badgeH = 58 * portraitFactor;
+  const margin = 28 * portraitFactor;
 
   let badgeX = width - badgeW - margin;
   let badgeY = margin;
@@ -1317,54 +1493,56 @@ function drawGpxPhotosWatermark(
   }
 
   // Premium dark smoked glass backing with soft shadow
-  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 16);
+  roundRect(ctx, badgeX, badgeY, badgeW, badgeH, 16 * portraitFactor);
   ctx.fillStyle = 'rgba(9, 11, 16, 0.94)';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.75)';
-  ctx.shadowBlur = 20;
-  ctx.shadowOffsetY = 5;
+  ctx.shadowBlur = 20 * portraitFactor;
+  ctx.shadowOffsetY = 5 * portraitFactor;
   ctx.fill();
 
   // Subtle luminous rim border
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.4 * portraitFactor;
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
   ctx.stroke();
 
   // Draw the official GPX.photos Postcard Emblem centered vertically
   const emblemCenterY = badgeY + badgeH / 2;
-  drawPostcardLogoEmblem(ctx, badgeX + 34, emblemCenterY, 0.95);
+  drawPostcardLogoEmblem(ctx, badgeX + 34 * portraitFactor, emblemCenterY, 0.95 * portraitFactor);
 
   // Main Brand Name: gpx.photos (cleanly vertically centered without the 3D telemetry tagline)
-  const textStartX = badgeX + 70;
-  const textBaseY = badgeY + badgeH / 2 + 8;
+  const textStartX = badgeX + 70 * portraitFactor;
+  const textBaseY = badgeY + badgeH / 2 + 8 * portraitFactor;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
 
+  const brandFontSize = Math.round(24 * portraitFactor);
+
   // "gpx" (Bold White)
-  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+  ctx.font = `900 ${brandFontSize}px "Plus Jakarta Sans", sans-serif`;
   ctx.fillStyle = '#FFFFFF';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-  ctx.shadowBlur = 4;
+  ctx.shadowBlur = 4 * portraitFactor;
   ctx.fillText('gpx', textStartX, textBaseY);
 
   const gpxW = ctx.measureText('gpx').width;
 
   // "." (Orange Dot)
-  const dotRadius = 3.6;
-  const dotX = textStartX + gpxW + 5.5;
-  const dotY = textBaseY - 6.5;
+  const dotRadius = 3.6 * portraitFactor;
+  const dotX = textStartX + gpxW + 5.5 * portraitFactor;
+  const dotY = textBaseY - 6.5 * portraitFactor;
   ctx.fillStyle = '#FF5500';
   ctx.shadowColor = 'rgba(255, 85, 0, 0.7)';
-  ctx.shadowBlur = 8;
+  ctx.shadowBlur = 8 * portraitFactor;
   ctx.beginPath();
   ctx.arc(dotX, dotY, dotRadius, 0, Math.PI * 2);
   ctx.fill();
 
   // "photos" (Bold White)
-  const photosStartX = dotX + dotRadius + 5;
-  ctx.font = '900 24px "Plus Jakarta Sans", sans-serif';
+  const photosStartX = dotX + dotRadius + 5 * portraitFactor;
+  ctx.font = `900 ${brandFontSize}px "Plus Jakarta Sans", sans-serif`;
   ctx.fillStyle = '#FFFFFF';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
-  ctx.shadowBlur = 4;
+  ctx.shadowBlur = 4 * portraitFactor;
   ctx.fillText('photos', photosStartX, textBaseY);
 
   ctx.restore();

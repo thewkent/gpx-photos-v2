@@ -69,10 +69,10 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
   ];
 
   const glassStyles = [
-    { id: 'smoked_glass', label: 'Smoked Glass (Subtle Tint)' },
-    { id: 'frosted_ice', label: 'Frosted Ice' },
+    { id: 'neon_rim', label: 'Neon Rim Glow (Default)' },
+    { id: 'transparent_line_color', label: 'Transparent (Line Color)' },
     { id: 'carbon_fiber', label: 'Carbon Fiber' },
-    { id: 'neon_rim', label: 'Neon Rim Glow' },
+    { id: 'frosted_ice', label: 'Frosted Ice' },
   ] as const;
 
   // Accurate Imperial / Metric detection that reliably toggles back and forth
@@ -178,43 +178,45 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* 3-Section Sub-Navigation for Overlay Tab */}
-      <div className="grid grid-cols-3 p-1 bg-zinc-900 border border-white/10 rounded-lg">
-        <button
-          onClick={() => setSubSection('route')}
-          className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all ${
-            subSection === 'route'
-              ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <Compass className="w-3.5 h-3.5" />
-          <span>GPS Route</span>
-        </button>
+      {/* 3-Section Sub-Navigation for Overlay Tab - Pinned / Frozen on scroll */}
+      <div className="sticky top-[58px] -mt-5 -mx-5 px-5 pt-3 pb-3 bg-[#141417]/95 backdrop-blur-md z-10 border-b border-white/[0.08] shadow-md">
+        <div className="grid grid-cols-3 p-1 bg-zinc-900 border border-white/10 rounded-lg">
+          <button
+            onClick={() => setSubSection('route')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all cursor-pointer ${
+              subSection === 'route'
+                ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Compass className="w-3.5 h-3.5" />
+            <span>GPS Route</span>
+          </button>
 
-        <button
-          onClick={() => setSubSection('hud')}
-          className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all ${
-            subSection === 'hud'
-              ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <Layout className="w-3.5 h-3.5" />
-          <span>HUD Plaque</span>
-        </button>
+          <button
+            onClick={() => setSubSection('hud')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all cursor-pointer ${
+              subSection === 'hud'
+                ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Layout className="w-3.5 h-3.5" />
+            <span>Statistics</span>
+          </button>
 
-        <button
-          onClick={() => setSubSection('elevation')}
-          className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all ${
-            subSection === 'elevation'
-              ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span>Elevation</span>
-        </button>
+          <button
+            onClick={() => setSubSection('elevation')}
+            className={`flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium rounded transition-all cursor-pointer ${
+              subSection === 'elevation'
+                ? 'bg-zinc-800 text-amber-400 font-semibold shadow-xs'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Elevation</span>
+          </button>
+        </div>
       </div>
 
       {/* Global HUD Glassmorphism & Translucency Quick Control */}
@@ -293,6 +295,51 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
       {/* ======================================================== */}
       {subSection === 'route' && (
         <div className="space-y-5">
+          {/* Route Position: Horizontal (X) & Vertical (Y) - Placed at the top */}
+          <div className="p-3.5 bg-zinc-900/80 border border-white/[0.08] rounded-xl space-y-2.5 shadow-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                Route Placement
+              </span>
+              <span className="text-[10px] font-mono text-amber-400">
+                {Math.round(spatialRoute.posX * 100)}% X · {Math.round(spatialRoute.posY * 100)}% Y
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-zinc-400">Horizontal (X)</span>
+                  <span className="font-mono text-white">{Math.round(spatialRoute.posX * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="0.9"
+                  step="0.02"
+                  value={spatialRoute.posX}
+                  onChange={(e) => onUpdateSpatialRoute({ posX: parseFloat(e.target.value) })}
+                  className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex justify-between text-[11px] mb-1">
+                  <span className="text-zinc-400">Vertical (Y)</span>
+                  <span className="font-mono text-white">{Math.round(spatialRoute.posY * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="0.95"
+                  step="0.02"
+                  value={spatialRoute.posY}
+                  onChange={(e) => onUpdateSpatialRoute({ posY: parseFloat(e.target.value) })}
+                  className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* GPX Upload & Presets */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
@@ -494,7 +541,9 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                   </span>
                 </div>
                 <span className="text-[10px] text-amber-400/80 font-mono">
-                  {spatialRoute.renderMode === 'laser_ribbon'
+                  {spatialRoute.renderMode === 'molten_laser'
+                    ? 'Molten Laser'
+                    : spatialRoute.renderMode === 'laser_ribbon'
                     ? 'Laser Ribbon'
                     : spatialRoute.renderMode === 'archival_shadow'
                     ? 'Archival Shadow'
@@ -506,6 +555,7 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
 
               <div className="grid grid-cols-2 gap-1.5">
                 {[
+                  { id: 'molten_laser', label: 'Molten Laser', desc: 'Electric filament & road bloom' },
                   { id: 'volumetric_tube', label: 'Volumetric Tube', desc: 'Beveled tube & specular ridge' },
                   { id: 'laser_ribbon', label: 'Neon Laser', desc: 'Emissive radiant glow' },
                   { id: 'archival_shadow', label: 'Archival Shadow', desc: 'Deep ground shadow' },
@@ -690,41 +740,6 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                 </div>
               )}
             </div>
-
-            {/* Position X and Y (Middle Right default) */}
-            <div className="grid grid-cols-2 gap-3 pt-1 border-t border-white/5">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-zinc-400">Horizontal (X)</span>
-                  <span className="font-mono text-white">{Math.round(spatialRoute.posX * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="0.9"
-                  step="0.02"
-                  value={spatialRoute.posX}
-                  onChange={(e) => onUpdateSpatialRoute({ posX: parseFloat(e.target.value) })}
-                  className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-zinc-400">Vertical (Y)</span>
-                  <span className="font-mono text-white">{Math.round(spatialRoute.posY * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="0.95"
-                  step="0.02"
-                  value={spatialRoute.posY}
-                  onChange={(e) => onUpdateSpatialRoute({ posY: parseFloat(e.target.value) })}
-                  className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
-                />
-              </div>
-            </div>
           </div>
         </div>
       )}
@@ -737,10 +752,10 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
           {/* Header & Toggle */}
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
-              Smoked Glass Stats Card
+              Workout &amp; Race Statistics
             </span>
             <label className="flex items-center gap-2 cursor-pointer">
-              <span className="text-[11px] text-zinc-400">Card Enabled</span>
+              <span className="text-[11px] text-zinc-400">Show Statistics</span>
               <input
                 type="checkbox"
                 checked={hudCard.enabled}
@@ -752,45 +767,6 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
 
           {hudCard.enabled && (
             <div className="space-y-4">
-              {/* Orientation: Flat / Straight vs 3D Slanted */}
-              <div>
-                <span className="text-xs text-zinc-400 block mb-1.5">Plaque Orientation</span>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() =>
-                      onUpdateHudCard({
-                        orientation: 'straight',
-                        tiltY: 0,
-                        tiltX: 0,
-                      })
-                    }
-                    className={`p-2.5 rounded-lg text-xs font-medium border text-center transition-all ${
-                      hudCard.tiltY === 0 && hudCard.tiltX === 0
-                        ? 'bg-amber-400/20 border-amber-400 text-amber-200 shadow-xs'
-                        : 'bg-zinc-900/60 border-white/[0.06] text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    Flat / Straight (Default)
-                  </button>
-
-                  <button
-                    onClick={() =>
-                      onUpdateHudCard({
-                        orientation: 'slanted_left',
-                        tiltY: 16,
-                        tiltX: 20,
-                      })
-                    }
-                    className={`p-2.5 rounded-lg text-xs font-medium border text-center transition-all ${
-                      hudCard.orientation === 'slanted_left' && hudCard.tiltY !== 0
-                        ? 'bg-amber-400/20 border-amber-400 text-amber-200 shadow-xs'
-                        : 'bg-zinc-900/60 border-white/[0.06] text-zinc-400 hover:text-white'
-                    }`}
-                  >
-                    3D Road Slant
-                  </button>
-                </div>
-              </div>
 
               {/* Event Name & Year Header Customizer */}
               <div className="p-3.5 bg-zinc-900/70 border border-white/[0.08] rounded-xl space-y-2.5">
@@ -808,35 +784,21 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                 </div>
 
                 {(hudCard.showHeader !== false && hudCard.showStravaLogo !== false) && (
-                  <div className="grid grid-cols-3 gap-2 pt-1">
-                    <div className="col-span-2">
-                      <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                        Event / Race Title
-                      </label>
-                      <input
-                        type="text"
-                        value={hudCard.headerTitle ?? activity.name}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          onUpdateHudCard({ headerTitle: val });
-                          onUpdateActivity({ name: val });
-                        }}
-                        placeholder="e.g. CAPE EPIC"
-                        className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                        Year
-                      </label>
-                      <input
-                        type="text"
-                        value={hudCard.headerYear ?? '2026'}
-                        onChange={(e) => onUpdateHudCard({ headerYear: e.target.value })}
-                        placeholder="2026"
-                        className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-amber-400 font-mono"
-                      />
-                    </div>
+                  <div className="pt-1">
+                    <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
+                      Event / Race Title
+                    </label>
+                    <input
+                      type="text"
+                      value={hudCard.headerTitle ?? activity.name}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        onUpdateHudCard({ headerTitle: val });
+                        onUpdateActivity({ name: val });
+                      }}
+                      placeholder="e.g. CAPE EPIC"
+                      className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white uppercase focus:outline-none focus:border-amber-400 font-bold"
+                    />
                   </div>
                 )}
               </div>
@@ -939,13 +901,13 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-400">Plaque Scale</span>
+                      <span className="text-zinc-400">Card Size / Scale</span>
                       <span className="font-mono text-white">{Math.round(hudCard.scale * 100)}%</span>
                     </div>
                     <input
                       type="range"
-                      min="0.7"
-                      max="1.4"
+                      min="0.6"
+                      max="2.5"
                       step="0.05"
                       value={hudCard.scale}
                       onChange={(e) => onUpdateHudCard({ scale: parseFloat(e.target.value) })}
@@ -970,47 +932,7 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                   </div>
                 </div>
 
-                {/* 3D Slant & Pitch */}
-                <div className="grid grid-cols-2 gap-3 pt-1 border-t border-white/5">
-                  <div>
-                    <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-400">3D Horizontal Slant</span>
-                      <span className="font-mono text-white">{hudCard.tiltY}°</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="-35"
-                      max="35"
-                      step="1"
-                      value={hudCard.tiltY}
-                      onChange={(e) =>
-                        onUpdateHudCard({
-                          tiltY: parseInt(e.target.value),
-                          orientation: parseInt(e.target.value) !== 0 ? 'slanted_left' : 'straight',
-                        })
-                      }
-                      className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
-                    />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-400">3D Ground Pitch</span>
-                      <span className="font-mono text-white">{hudCard.tiltX}°</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0"
-                      max="40"
-                      step="1"
-                      value={hudCard.tiltX}
-                      onChange={(e) => onUpdateHudCard({ tiltX: parseInt(e.target.value) })}
-                      className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                {/* Plaque Position X and Y (Bottom Left default) */}
+                {/* Card Position X and Y */}
                 <div className="grid grid-cols-2 gap-3 pt-1 border-t border-white/5">
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
@@ -1019,9 +941,9 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                     </div>
                     <input
                       type="range"
-                      min="0.05"
+                      min="0.0"
                       max="0.85"
-                      step="0.02"
+                      step="0.01"
                       value={hudCard.posX}
                       onChange={(e) => onUpdateHudCard({ posX: parseFloat(e.target.value) })}
                       className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
@@ -1030,14 +952,14 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
 
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-400">Vertical (Bottom)</span>
+                      <span className="text-zinc-400">Vertical</span>
                       <span className="font-mono text-white">{Math.round(hudCard.posY * 100)}%</span>
                     </div>
                     <input
                       type="range"
-                      min="0.1"
+                      min="0.0"
                       max="0.9"
-                      step="0.02"
+                      step="0.01"
                       value={hudCard.posY}
                       onChange={(e) => onUpdateHudCard({ posY: parseFloat(e.target.value) })}
                       className="w-full accent-amber-400 h-1.5 bg-zinc-800 rounded-lg cursor-pointer"
@@ -1196,7 +1118,7 @@ export const OverlayTab: React.FC<OverlayTabProps> = ({
                     <input
                       type="range"
                       min="28"
-                      max="90"
+                      max="140"
                       step="2"
                       value={elevationConfig.height}
                       onChange={(e) => onUpdateElevationConfig({ height: parseInt(e.target.value) })}

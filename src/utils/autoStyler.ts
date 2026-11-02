@@ -293,14 +293,14 @@ function deriveStyleFromStats(
     routeColorName = 'Strava Racing Orange';
     spatialRoute.renderMode = 'volumetric_tube';
     spatialRoute.tubeSpecular = true;
-    hudCard.style = 'smoked_glass';
+    hudCard.style = 'neon_rim';
   } else if (stats.dominantHue === 'cool_twilight' || stats.avgWarmth < -0.06) {
     mood = 'Nordic Mountain Cool';
     paletteDescription = 'Crisp mountain daylight with neon coral contrast';
     accentHex = '#F43F5E';
     routeColorName = 'Neon Coral';
     spatialRoute.renderMode = 'volumetric_tube';
-    hudCard.style = 'smoked_glass';
+    hudCard.style = 'neon_rim';
   } else if (stats.dominantHue === 'forest_green' || stats.groundTone === 'green_trail') {
     mood = 'Alpine Trail & Forest';
     paletteDescription = 'Natural forest scenery with vibrant telemetry contrast';
@@ -308,7 +308,7 @@ function deriveStyleFromStats(
     routeColorName = 'Solar Summit Gold';
     spatialRoute.renderMode = 'volumetric_tube';
     spatialRoute.tubeSpecular = true;
-    hudCard.style = 'smoked_glass';
+    hudCard.style = 'neon_rim';
   } else {
     mood = 'High-Definition Asphalt';
     paletteDescription = 'Crisp natural photo with iconic race telemetry';
@@ -316,7 +316,7 @@ function deriveStyleFromStats(
     routeColorName = stats.vibrantAccent.name || 'Strava Racing Orange';
     spatialRoute.renderMode = 'volumetric_tube';
     spatialRoute.shadowIntensity = 0.65;
-    hudCard.style = 'smoked_glass';
+    hudCard.style = 'neon_rim';
   }
 
   // 2. INTELLIGENT FACE, ELEVATION & NEGATIVE SPACE DOCKING

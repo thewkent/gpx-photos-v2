@@ -164,11 +164,10 @@ export const EventLandingPage: React.FC<EventLandingPageProps> = ({
 
             {/* Floating Glass Telemetry Plaque (Left Middle) */}
             <div className="absolute top-1/2 -translate-y-1/2 left-4 sm:left-10 bg-zinc-950/85 backdrop-blur-xl border border-white/20 rounded-xl p-3.5 sm:p-5 shadow-2xl text-left max-w-[240px] sm:max-w-xs pointer-events-none">
-              <div className="flex items-center justify-between pb-2 border-b border-white/10">
+              <div className="pb-2 border-b border-white/10">
                 <span className="text-[10px] sm:text-xs font-black tracking-wider text-white font-mono uppercase">
                   {event.hudPreset.headerTitle || event.name.toUpperCase()}
                 </span>
-                <span className="text-[9px] font-mono text-amber-400">{event.hudPreset.headerYear || '2026'}</span>
               </div>
               <div className="grid grid-cols-2 gap-y-2 gap-x-4 pt-2 text-[10px] sm:text-xs">
                 {event.hudPreset.customMetrics?.map((m) => (

@@ -13,9 +13,7 @@ import {
   Compass,
   FileCode,
   ArrowRight,
-  Calendar,
   Tag,
-  User,
   Activity as ActivityIcon,
 } from 'lucide-react';
 
@@ -293,51 +291,21 @@ export const UploadTab: React.FC<UploadTabProps> = ({
         </p>
 
         <div className="p-3.5 bg-zinc-900/80 border border-white/10 rounded-xl space-y-3">
-          <div className="grid grid-cols-3 gap-2.5">
-            <div className="col-span-2">
-              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center gap-1">
-                <Tag className="w-3 h-3 text-amber-400" />
-                <span>Activity / Route Title</span>
-              </label>
-              <input
-                type="text"
-                value={hudCard.headerTitle ?? activity.name}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  onUpdateHudCard({ headerTitle: val });
-                  onUpdateActivity({ name: val });
-                }}
-                placeholder="e.g. MOUNT WHITNEY SUMMIT"
-                className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white uppercase font-bold focus:outline-none focus:border-amber-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center gap-1">
-                <Calendar className="w-3 h-3 text-amber-400" />
-                <span>Year</span>
-              </label>
-              <input
-                type="text"
-                value={hudCard.headerYear ?? '2026'}
-                onChange={(e) => onUpdateHudCard({ headerYear: e.target.value })}
-                placeholder="2026"
-                className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white font-mono focus:outline-none focus:border-amber-400"
-              />
-            </div>
-          </div>
-
           <div>
             <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1 flex items-center gap-1">
-              <User className="w-3 h-3 text-amber-400" />
-              <span>Adventurer / Participant Name</span>
+              <Tag className="w-3 h-3 text-amber-400" />
+              <span>Activity / Route Title</span>
             </label>
             <input
               type="text"
-              value={activity.athleteName}
-              onChange={(e) => onUpdateActivity({ athleteName: e.target.value })}
-              placeholder="e.g. Alex Honnold"
-              className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white focus:outline-none focus:border-amber-400"
+              value={hudCard.headerTitle ?? activity.name}
+              onChange={(e) => {
+                const val = e.target.value;
+                onUpdateHudCard({ headerTitle: val });
+                onUpdateActivity({ name: val });
+              }}
+              placeholder="e.g. MOUNT WHITNEY SUMMIT"
+              className="w-full px-2.5 py-1.5 bg-zinc-950 border border-white/10 rounded text-xs text-white uppercase font-bold focus:outline-none focus:border-amber-400"
             />
           </div>
         </div>

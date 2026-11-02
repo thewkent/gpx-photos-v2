@@ -89,7 +89,7 @@ export const DEFAULT_SPATIAL_CONFIG: SpatialRouteConfig = {
 
 export const DEFAULT_HUD_CONFIG: HudCardConfig = {
   enabled: true,
-  style: 'smoked_glass',
+  style: 'neon_rim',
   orientation: 'straight',
   posX: 0.16, // Bottom left
   posY: 0.76, // Bottom left
@@ -98,7 +98,6 @@ export const DEFAULT_HUD_CONFIG: HudCardConfig = {
   tiltX: 0,
   showHeader: true,
   headerTitle: 'SYDNEY MARATHON',
-  headerYear: '2026',
   showStravaLogo: true,
   opacity: 0.94,
   glassThickness: 3,
