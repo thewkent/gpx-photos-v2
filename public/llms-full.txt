@@ -1,0 +1,48 @@
+# GPX.photos - Full Technical Specification & Agent Reference
+
+> GPX.photos is a browser-based application that overlays 3D GPS route paths and athletic telemetry plaques directly onto adventure and race photography without uploading user photos or GPX files to any server.
+
+## Overview & Architecture
+
+- **Domain**: https://gpx.photos
+- **Application Category**: MultimediaApplication, Sports & Fitness Art Studio
+- **Platform Architecture**: 100% Client-side HTML5 Canvas 2D/3D matrix projection with optional server-side layout assistance via Gemini Vision.
+- **Privacy Model**: Zero-upload architecture. Photos and GPS coordinates remain strictly in browser RAM. No telemetry or images are saved to external cloud storage.
+
+## Key Features
+
+1. **3D Route Perspective Projection**:
+   - Projects 2D GPS latitude/longitude coordinates onto photo ground planes using yaw, pitch, tilt, and vertical elevation scaling.
+   - Multiple styling modes: Volumetric Tube with ambient ground drop shadow, Molten Laser filament bloom, Neon Ridge, and Archival Minimalist.
+2. **Glassmorphic Statistics HUD Plaque**:
+   - Floating telemetry plaque displaying distance, duration, elevation gain, and average pace/speed.
+   - Customizable styles: Neon Rim Glow, 100% Transparent (using route line color), Carbon Fiber, and Frosted Ice.
+   - Full 0% to 90% vertical positioning and 0% to 85% horizontal alignment.
+   - Dynamic scaling from 60% up to 250% with automatic portrait aspect ratio compensation.
+3. **Synchronized Elevation Profile Ribbon**:
+   - Profile area gradient with peak marker dot, summit altitude label, start elevation, and elevation gain badge.
+   - Dynamic height scaling up to 140px.
+4. **4K Export & Licensing**:
+   - Free Social Edition ($0): Full resolution export with official gpx.photos hallmark emblem in any corner.
+   - Clean Master Edition ($10): 100% unbranded 300 DPI master download with permanent watermark removal via Paystack checkout.
+
+## Structured Endpoints
+
+- **GET /**: Homepage (HTML or Markdown when requested with `Accept: text/markdown`).
+- **GET /studio**: Direct access to the interactive studio workspace.
+- **GET /llms.txt**: Index of agent resources.
+- **GET /llms-full.txt**: Full technical documentation.
+- **GET /.well-known/mcp/server-card.json**: Model Context Protocol (MCP) server descriptor.
+- **POST /api/auto-style**: Accepts `{ imageBase64: string }` and returns AI-recommended widget bounding boxes and style palette.
+
+## Contact & Business Details
+
+- **Company / Entity**: gpx.photos (GPX Photos Studio Inc.)
+- **Support Email**: support@gpx.photos
+- **Website**: https://gpx.photos
+- **SameAs Profiles**:
+  - Strava: https://www.strava.com/clubs/gpxphotos
+  - X / Twitter: https://x.com/gpxphotos
+  - Instagram: https://www.instagram.com/gpx.photos
+  - GitHub: https://github.com/gpxphotos
+  - YouTube: https://www.youtube.com/@gpxphotos

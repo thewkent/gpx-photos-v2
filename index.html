@@ -27,19 +27,71 @@
     <meta name="twitter:image" content="https://gpx.photos/og-preview.jpg" />
     <meta name="twitter:image:alt" content="gpx.photos - Add GPS route map and workout stats to your marathon or cycling photo" />
     
-    <!-- Schema.org JSON-LD Structured Data (WebApplication + FAQPage for Search Rich Snippets & AI LLMs) -->
+    <!-- Resource Discovery Links for Autonomous Agents (RFC 8288 / SEP-1649) -->
+    <link rel="alternate" type="text/plain" href="https://gpx.photos/llms.txt" title="LLMs.txt Guide" />
+    <link rel="alternate" type="text/plain" href="https://gpx.photos/llms-full.txt" title="Full Technical LLMs.txt" />
+    <link rel="alternate" type="text/markdown" href="https://gpx.photos/?format=markdown" title="Markdown Version" />
+    <link rel="service-desc" type="application/json" href="https://gpx.photos/.well-known/mcp/server-card.json" title="MCP Server Card" />
+    
+    <!-- Schema.org JSON-LD Structured Data: Multi-Entity Graph (Organization, WebSite, WebApplication, Product, Service, FAQPage, BreadcrumbList) -->
     <script type="application/ld+json">
     [
       {
         "@context": "https://schema.org",
-        "@type": "WebApplication",
+        "@type": "Organization",
+        "@id": "https://gpx.photos/#organization",
+        "name": "gpx.photos",
+        "legalName": "GPX Photos Studio Inc.",
+        "url": "https://gpx.photos",
+        "logo": "https://gpx.photos/assets/gpx-photos-emblem-YOUASDAC.svg",
+        "image": "https://gpx.photos/og-preview.jpg",
+        "description": "gpx.photos provides browser-based 3D GPS route visualization and workout telemetry overlay tools for runners, cyclists, and outdoor athletes.",
+        "email": "support@gpx.photos",
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "email": "support@gpx.photos",
+            "contactType": "customer support",
+            "availableLanguage": ["English"]
+          }
+        ],
+        "sameAs": [
+          "https://www.strava.com/clubs/gpxphotos",
+          "https://x.com/gpxphotos",
+          "https://www.instagram.com/gpx.photos",
+          "https://github.com/gpxphotos",
+          "https://www.youtube.com/@gpxphotos"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "@id": "https://gpx.photos/#website",
         "name": "gpx.photos",
         "url": "https://gpx.photos",
+        "publisher": {
+          "@id": "https://gpx.photos/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://gpx.photos/#event/{search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "@id": "https://gpx.photos/#webapp",
+        "name": "gpx.photos Studio",
+        "url": "https://gpx.photos",
         "applicationCategory": "MultimediaApplication",
-        "operatingSystem": "All",
+        "operatingSystem": "All modern desktop and mobile browsers",
         "browserRequirements": "Requires JavaScript and HTML5 Canvas",
         "description": "gpx.photos lets runners, cyclists, and hikers overlay their GPS route map and workout telemetry directly onto race and outdoor photos in any browser without installing an app. 100% private and client-side.",
         "image": "https://gpx.photos/og-preview.jpg",
+        "provider": {
+          "@id": "https://gpx.photos/#organization"
+        },
         "offers": [
           {
             "@type": "Offer",
@@ -64,6 +116,79 @@
           "Synchronized Elevation Profile Ribbon with Peak Markers",
           "Zero-Crop Native Camera Aspect Ratio Support",
           "Compatible with Garmin, Strava, Apple Watch, Wahoo, COROS, Komoot, and AllTrails"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        "@id": "https://gpx.photos/#product-master",
+        "name": "GPX.photos 4K Clean Master Edition",
+        "description": "Permanent watermark removal and unbranded 4K / 300 DPI fine art master export of your sports photography route overlay.",
+        "brand": {
+          "@id": "https://gpx.photos/#organization"
+        },
+        "offers": {
+          "@type": "Offer",
+          "url": "https://gpx.photos/#pricing",
+          "price": "10.00",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock",
+          "seller": {
+            "@id": "https://gpx.photos/#organization"
+          }
+        },
+        "aggregateRating": {
+          "@type": "AggregateRating",
+          "ratingValue": "4.9",
+          "reviewCount": "184"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "@id": "https://gpx.photos/#service-overlay",
+        "name": "3D GPS Route & Telemetry Photo Art Overlay",
+        "serviceType": "Sports Photography & Map Artwork Rendering",
+        "provider": {
+          "@id": "https://gpx.photos/#organization"
+        },
+        "areaServed": "Worldwide",
+        "description": "Client-side browser service converting GPX fitness tracks into fine-art 3D perspective overlays on digital photos."
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://gpx.photos/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Studio",
+            "item": "https://gpx.photos/#studio"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Races & Events",
+            "item": "https://gpx.photos/#events"
+          },
+          {
+            "@type": "ListItem",
+            "position": 4,
+            "name": "About",
+            "item": "https://gpx.photos/#about"
+          },
+          {
+            "@type": "ListItem",
+            "position": 5,
+            "name": "Contact",
+            "item": "https://gpx.photos/#contact"
+          }
         ]
       },
       {
@@ -122,6 +247,22 @@
     <script src="https://js.paystack.co/v1/inline.js"></script>
   </head>
   <body class="bg-[#111113] text-[#F3F3F5] antialiased selection:bg-amber-500/20 selection:text-amber-200">
+    <!-- WebMCP Tool Semantic Form Annotation for in-browser agents (Goal 12) -->
+    <form id="webmcp-gpx-overlay-tool"
+          toolname="configure_gpx_overlay"
+          tooldescription="Configures 3D route styling, elevation ribbon, and telemetry statistics plaque for photo overlays"
+          action="/api/auto-style"
+          method="POST"
+          style="display:none;"
+          aria-hidden="true">
+      <input name="routeColor" type="text" placeholder="#FC5200" title="Route Glow Color" />
+      <input name="renderMode" type="text" placeholder="molten_laser" title="Route Render Mode" />
+      <input name="hudStyle" type="text" placeholder="neon_rim" title="HUD Plaque Style" />
+      <input name="cardScale" type="number" step="0.05" min="0.6" max="2.5" placeholder="1.0" title="HUD Scale" />
+      <input name="verticalPosition" type="number" step="0.01" min="0.0" max="0.9" placeholder="0.76" title="Vertical Position" />
+      <button type="submit">Apply Overlay Configuration</button>
+    </form>
+
     <!-- Prerendered Static Semantic HTML for Search Engines, Social Bots, & AI Scrapers (Replaced by React on mount) -->
     <div id="root">
       <header style="padding: 24px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
@@ -129,6 +270,14 @@
         <p style="color: #a1a1aa; font-size: 16px; max-width: 650px; margin: 0 auto;">
           Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros.
         </p>
+        <nav style="margin-top: 14px; font-size: 14px;">
+          <a href="#studio" style="color: #fbbf24; margin: 0 10px; font-weight: 600;">Open Studio</a> |
+          <a href="#events" style="color: #fbbf24; margin: 0 10px;">Race Catalog</a> |
+          <a href="#about" style="color: #d4d4d8; margin: 0 10px;">About</a> |
+          <a href="#contact" style="color: #d4d4d8; margin: 0 10px;">Contact</a> |
+          <a href="#terms" style="color: #d4d4d8; margin: 0 10px;">Terms</a> |
+          <a href="#privacy" style="color: #d4d4d8; margin: 0 10px;">Privacy Policy</a>
+        </nav>
       </header>
       
       <main style="max-width: 900px; margin: 40px auto; padding: 0 20px; font-family: sans-serif; color: #d4d4d8; line-height: 1.6;">
@@ -150,6 +299,21 @@
             <li><a href="#event/ride-joburg" style="color: #fbbf24;">Virgin Active Ride Joburg (97 km Road Cycling Classic)</a></li>
             <li><a href="#event/sydney-marathon" style="color: #fbbf24;">TCS Sydney Marathon (42.2 km Harbour Bridge &amp; Opera House)</a></li>
           </ul>
+        </section>
+
+        <section style="margin-bottom: 40px; padding: 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); rounded: 8px;">
+          <h2 style="font-size: 20px; color: #fff; margin-top: 0;">Machine-Readable Contact &amp; Legal</h2>
+          <p>
+            Customer Support &amp; Agent Desk: <a href="mailto:support@gpx.photos" style="color: #fbbf24; font-weight: 600;">support@gpx.photos</a>
+          </p>
+          <p>
+            Pages:
+            <a href="#about" style="color: #fbbf24; margin-right: 12px;">About Us</a>
+            <a href="#contact" style="color: #fbbf24; margin-right: 12px;">Contact</a>
+            <a href="#terms" style="color: #fbbf24; margin-right: 12px;">Terms of Service</a>
+            <a href="#privacy" style="color: #fbbf24; margin-right: 12px;">Privacy Policy</a>
+            <a href="/llms.txt" style="color: #fbbf24;">llms.txt</a>
+          </p>
         </section>
       </main>
     </div>

@@ -23,9 +23,11 @@ import {
   Calendar,
   MapPin,
   Flame,
+  Mail,
 } from 'lucide-react';
 import { ASSETS } from '../data/sampleRoutes';
 import { FEATURED_EVENTS, EventPreset } from '../data/eventCatalog';
+import { InfoModal, InfoModalTab } from './InfoModal';
 
 interface LandingPageProps {
   onOpenStudio: () => void;
@@ -38,6 +40,20 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenEvent,
 }) => {
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+  const [infoModalTab, setInfoModalTab] = useState<InfoModalTab | null>(null);
+
+  React.useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#about') setInfoModalTab('about');
+      else if (hash === '#contact') setInfoModalTab('contact');
+      else if (hash === '#terms') setInfoModalTab('terms');
+      else if (hash === '#privacy') setInfoModalTab('privacy');
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
@@ -772,31 +788,140 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* 10. MARKETING FOOTER */}
-      <footer className="border-t border-white/10 bg-black/60 py-8 px-4 sm:px-8 text-xs text-zinc-400">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <GpxPhotosLogo variant="horizontal" size={24} theme="dark" />
-            <span className="text-[11px] text-zinc-400">
-              © {new Date().getFullYear()} gpx.photos. All rights reserved.
-            </span>
+      <footer className="border-t border-white/10 bg-black/80 py-10 px-4 sm:px-8 text-xs text-zinc-400">
+        <div className="max-w-6xl mx-auto space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-6 border-b border-white/10">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <GpxPhotosLogo variant="horizontal" size={26} theme="dark" />
+              </div>
+              <p className="text-[12px] text-zinc-400 max-w-md">
+                Overlay your GPX route and workout stats directly onto race and adventure photos. Free, browser-based, and 100% private with zero server uploads.
+              </p>
+            </div>
+
+            {/* Machine-readable contact card */}
+            <div className="p-3.5 bg-zinc-900/70 border border-white/10 rounded-xl space-y-1">
+              <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-400 block">
+                Official Support &amp; Agent Contact
+              </span>
+              <a
+                href="mailto:support@gpx.photos"
+                className="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1.5 transition-colors text-xs"
+                title="Email customer support"
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>support@gpx.photos</span>
+              </a>
+            </div>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px]">
-            <button onClick={onOpenStudio} className="hover:text-amber-300 transition-colors cursor-pointer">
-              Open Studio
-            </button>
-            <a href="#how-it-works" className="hover:text-amber-300 transition-colors">
-              How It Works
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-[11px]">
+            <span className="text-zinc-500">
+              © {new Date().getFullYear()} gpx.photos. All rights reserved. GPX Photos Studio Inc.
+            </span>
+
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              <button
+                onClick={() => setInfoModalTab('about')}
+                className="hover:text-amber-300 transition-colors cursor-pointer"
+              >
+                About
+              </button>
+              <button
+                onClick={() => setInfoModalTab('contact')}
+                className="hover:text-amber-300 transition-colors cursor-pointer"
+              >
+                Contact
+              </button>
+              <button
+                onClick={() => setInfoModalTab('terms')}
+                className="hover:text-amber-300 transition-colors cursor-pointer"
+              >
+                Terms of Service
+              </button>
+              <button
+                onClick={() => setInfoModalTab('privacy')}
+                className="hover:text-amber-300 transition-colors cursor-pointer"
+              >
+                Privacy Policy
+              </button>
+              <a
+                href="/llms.txt"
+                className="text-amber-400 hover:text-amber-300 transition-colors font-mono"
+                title="Agent LLMs plaintext guide"
+              >
+                llms.txt
+              </a>
+              <a
+                href="/.well-known/mcp/server-card.json"
+                className="text-zinc-500 hover:text-zinc-300 transition-colors font-mono"
+                title="MCP Server Card"
+              >
+                MCP Card
+              </a>
+            </div>
+          </div>
+
+          {/* SameAs External Profile Badges */}
+          <div className="pt-2 flex items-center gap-4 text-[11px] text-zinc-500 border-t border-white/5">
+            <span>Verified Profiles:</span>
+            <a
+              href="https://www.strava.com/clubs/gpxphotos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors"
+            >
+              Strava Club
             </a>
-            <a href="#pricing" className="hover:text-amber-300 transition-colors">
-              Pricing ($10 Master)
+            <span>•</span>
+            <a
+              href="https://x.com/gpxphotos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors"
+            >
+              X / Twitter
             </a>
-            <a href="#faq" className="hover:text-amber-300 transition-colors">
-              FAQ
+            <span>•</span>
+            <a
+              href="https://www.instagram.com/gpx.photos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors"
+            >
+              Instagram
+            </a>
+            <span>•</span>
+            <a
+              href="https://github.com/gpxphotos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-amber-400 transition-colors"
+            >
+              GitHub
             </a>
           </div>
         </div>
       </footer>
+
+      {/* About, Contact, Terms, and Privacy Modal */}
+      <InfoModal
+        isOpen={!!infoModalTab}
+        activeTab={infoModalTab || 'about'}
+        onClose={() => {
+          setInfoModalTab(null);
+          if (
+            window.location.hash.startsWith('#about') ||
+            window.location.hash.startsWith('#contact') ||
+            window.location.hash.startsWith('#terms') ||
+            window.location.hash.startsWith('#privacy')
+          ) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+        }}
+        onSelectTab={(tab) => setInfoModalTab(tab)}
+      />
     </div>
   );
 };

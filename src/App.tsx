@@ -79,8 +79,28 @@ export default function App() {
         setCurrentView('landing');
       }
     };
+
+    // Handle path routes for about, contact, terms, privacy
+    if (['/about', '/contact', '/terms', '/privacy'].includes(window.location.pathname)) {
+      window.location.hash = window.location.pathname.replace('/', '#');
+    }
+
+    const handleWebMcpOverlay = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      if (!detail) return;
+      if (detail.style) setHudCard((prev) => ({ ...prev, style: detail.style }));
+      if (detail.cardScale) setHudCard((prev) => ({ ...prev, scale: detail.cardScale }));
+      if (detail.verticalPosition !== undefined) setHudCard((prev) => ({ ...prev, posY: detail.verticalPosition }));
+      if (detail.routeColor) setSpatialRoute((prev) => ({ ...prev, glowColor: detail.routeColor }));
+      if (detail.renderMode) setSpatialRoute((prev) => ({ ...prev, renderMode: detail.renderMode }));
+    };
+    window.addEventListener('webmcp:apply-overlay', handleWebMcpOverlay);
+
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('webmcp:apply-overlay', handleWebMcpOverlay);
+    };
   }, []);
 
   const navigateToStudio = () => {

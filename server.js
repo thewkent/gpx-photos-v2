@@ -4,6 +4,7 @@ import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import path from "path";
+import fs from "fs";
 dotenv.config();
 var app = express();
 app.use(express.json({ limit: "25mb" }));
@@ -215,18 +216,223 @@ Verify: no widget intersects a no-go zone, no widgets intersect each other, all 
     return res.status(500).json({ error: errorMsg });
   }
 });
+var AGENT_LINK_HEADERS = [
+  '</llms.txt>; rel="alternate"; type="text/plain"',
+  '</llms-full.txt>; rel="alternate"; type="text/plain"',
+  '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"',
+  '</?format=markdown>; rel="alternate"; type="text/markdown"'
+].join(", ");
+var VALID_EXACT_ROUTES = /* @__PURE__ */ new Set([
+  "/",
+  "/index.html",
+  "/studio",
+  "/app",
+  "/events",
+  "/pricing",
+  "/about",
+  "/contact",
+  "/terms",
+  "/privacy",
+  "/faq",
+  "/gallery"
+]);
+function isValidRoute(pathname) {
+  const normalized = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  if (VALID_EXACT_ROUTES.has(normalized)) return true;
+  if (normalized.startsWith("/event/")) return true;
+  return false;
+}
+function isMarkdownRequested(req) {
+  const accept = req.headers["accept"] || "";
+  const format = req.query.format;
+  return accept.includes("text/markdown") || accept.includes("text/x-markdown") || format === "markdown";
+}
+function escapeHtml(str) {
+  return str.replace(/[&<>'"]/g, (tag) => {
+    const chars = { "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" };
+    return chars[tag] || tag;
+  });
+}
+function generateHomepageMarkdown() {
+  return `# GPX.photos - Add Your Route Map & Stats to Any Photo
+
+> Overlay your GPX route and workout stats directly onto race, run, and ride photos. Free, browser-based, and 100% private. Works with Strava, Garmin, Apple Watch, and Coros.
+
+## Highlights
+- **100% Client-Side Privacy**: Photos and GPS files are processed entirely in browser memory. Zero server uploads.
+- **Zero-Crop Native Camera Ratios**: Supports full-frame DSLR, mirrorless, and mobile aspect ratios (3:2, 4:3, 16:9, and smartphone vertical).
+- **3D Ground Perspective Projection**: Projects authentic geographic GPS coordinates onto photo ground planes with customizable pitch, tilt, and drop shadow.
+- **Floating HUD Telemetry Plaque**: Glassmorphic stats card showing distance, time, elevation gain, and average pace/speed.
+- **Synchronized Elevation Profile Ribbon**: Dynamic altitude ribbon with summit peak markers and elevation gain badge.
+
+## Core Navigation
+- [Open Studio](https://gpx.photos/#studio): Launch interactive 3D route editor
+- [Featured Races & Events](https://gpx.photos/#events): Preloaded marathon & cycling classic routes
+- [About Us](https://gpx.photos/#about): Technical architecture and mission
+- [Contact Support](https://gpx.photos/#contact): Support email and agent desk
+- [Terms of Service](https://gpx.photos/#terms): Personal & commercial master licensing
+- [Privacy Policy](https://gpx.photos/#privacy): Zero data collection guarantee
+
+## Licensing
+- **Free Social Edition ($0)**: Free export with official gpx.photos hallmark emblem badge.
+- **Clean Master Edition ($10)**: 100% unbranded 300 DPI 4K master download via Paystack.
+
+## Machine-Readable Contact & Agent Resources
+- **Support Email**: [support@gpx.photos](mailto:support@gpx.photos)
+- **Legal Entity**: GPX Photos Studio Inc.
+- **LLMs Guide**: [/llms.txt](https://gpx.photos/llms.txt)
+- **Full LLMs Spec**: [/llms-full.txt](https://gpx.photos/llms-full.txt)
+- **MCP Server Card (SEP-1649)**: [/.well-known/mcp/server-card.json](https://gpx.photos/.well-known/mcp/server-card.json)
+- **Vision Layout API**: POST [/api/auto-style](https://gpx.photos/api/auto-style)
+`;
+}
+function render404Html(requestPath) {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Page Not Found | gpx.photos</title>
+    <meta name="robots" content="noindex, follow" />
+    <link rel="icon" type="image/svg+xml" href="/assets/gpx-photos-emblem-YOUASDAC.svg" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap">
+    <style>
+      body { margin: 0; background: #0A0A0C; color: #F3F3F5; font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; text-align: center; }
+      .card { max-width: 520px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 40px 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+      .badge { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F59E0B; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.25); border-radius: 999px; padding: 4px 14px; margin-bottom: 20px; }
+      h1 { font-size: 34px; font-weight: 800; margin: 0 0 12px 0; color: #FFFFFF; }
+      p { font-size: 15px; color: #A1A1AA; line-height: 1.6; margin: 0 0 24px 0; }
+      .path { font-family: 'JetBrains Mono', monospace; color: #F59E0B; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 6px; }
+      .btn { display: inline-block; background: #F59E0B; color: #0A0A0C; font-weight: 700; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-size: 14px; margin: 6px; transition: background 0.2s; }
+      .btn:hover { background: #FBBF24; }
+      .btn-secondary { background: rgba(255,255,255,0.08); color: #FFFFFF; }
+      .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+      .footer { margin-top: 24px; font-size: 12px; color: #71717A; }
+      .footer a { color: #A1A1AA; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="badge">HTTP 404 NOT FOUND</div>
+      <h1>Route Not Found</h1>
+      <p>The requested page <span class="path">${escapeHtml(requestPath)}</span> does not exist on gpx.photos.</p>
+      <div>
+        <a href="/" class="btn">Return to Homepage</a>
+        <a href="/#studio" class="btn btn-secondary">Launch Studio</a>
+      </div>
+      <div class="footer">
+        Customer Support: <a href="mailto:support@gpx.photos">support@gpx.photos</a> \u2022 <a href="/llms.txt">llms.txt</a>
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+app.get("/robots.txt", (_req, res) => {
+  const filePath = path.resolve("public/robots.txt");
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.send("User-agent: *\nAllow: /\n\nContent-Signal: search=yes, ai-train=no\n\nSitemap: https://gpx.photos/sitemap.xml\n");
+});
+app.get("/llms.txt", (_req, res) => {
+  const filePath = path.resolve("public/llms.txt");
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.send(generateHomepageMarkdown());
+});
+app.get("/llms-full.txt", (_req, res) => {
+  const filePath = path.resolve("public/llms-full.txt");
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.send(generateHomepageMarkdown());
+});
+app.get(["/.well-known/mcp/server-card.json", "/.well-known/mcp"], (_req, res) => {
+  const filePath = path.resolve("public/.well-known/mcp/server-card.json");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.setHeader("Cache-Control", "public, max-age=3600");
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  res.json({
+    name: "gpx.photos",
+    version: "1.0.0",
+    description: "GPX.photos 3D GPS route visualization and athletic telemetry overlay service.",
+    endpoint: "https://gpx.photos/api/mcp"
+  });
+});
 async function startServer() {
   const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3e3;
   const isProd = process.env.NODE_ENV === "production";
   if (!isProd) {
     const vite = await createViteServer({
       server: { middlewareMode: true, host: "0.0.0.0", port },
-      appType: "spa"
+      appType: "custom"
     });
     app.use(vite.middlewares);
+    app.get("*", async (req, res, next) => {
+      if (req.path.startsWith("/api/") || req.path.startsWith("/@") || req.path.startsWith("/src/") || req.path.startsWith("/node_modules/")) {
+        return next();
+      }
+      const publicFilePath = path.resolve("public" + req.path);
+      if (req.path !== "/" && fs.existsSync(publicFilePath) && fs.statSync(publicFilePath).isFile()) {
+        return next();
+      }
+      if (isMarkdownRequested(req)) {
+        res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+        res.setHeader("Vary", "Accept");
+        res.setHeader("Link", AGENT_LINK_HEADERS);
+        return res.status(200).send(generateHomepageMarkdown());
+      }
+      if (!isValidRoute(req.path)) {
+        res.status(404);
+        res.setHeader("Link", AGENT_LINK_HEADERS);
+        if (req.accepts("html")) {
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          return res.send(render404Html(req.path));
+        }
+        return res.json({ error: "Not Found", status: 404, path: req.path });
+      }
+      try {
+        const url = req.originalUrl;
+        let template = fs.readFileSync(path.resolve("index.html"), "utf-8");
+        template = await vite.transformIndexHtml(url, template);
+        res.status(200);
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        res.setHeader("Link", AGENT_LINK_HEADERS);
+        res.end(template);
+      } catch (e) {
+        vite.ssrFixStacktrace(e);
+        next(e);
+      }
+    });
   } else {
-    app.use(express.static(path.resolve("dist")));
-    app.get("*", (_req, res) => {
+    app.use(express.static(path.resolve("dist"), { index: false }));
+    app.get("*", (req, res) => {
+      if (isMarkdownRequested(req)) {
+        res.setHeader("Content-Type", "text/markdown; charset=utf-8");
+        res.setHeader("Vary", "Accept");
+        res.setHeader("Link", AGENT_LINK_HEADERS);
+        return res.status(200).send(generateHomepageMarkdown());
+      }
+      if (!isValidRoute(req.path)) {
+        res.status(404);
+        res.setHeader("Link", AGENT_LINK_HEADERS);
+        if (req.accepts("html")) {
+          res.setHeader("Content-Type", "text/html; charset=utf-8");
+          return res.send(render404Html(req.path));
+        }
+        return res.json({ error: "Not Found", status: 404, path: req.path });
+      }
+      res.status(200);
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.setHeader("Link", AGENT_LINK_HEADERS);
       res.sendFile(path.resolve("dist/index.html"));
     });
   }
