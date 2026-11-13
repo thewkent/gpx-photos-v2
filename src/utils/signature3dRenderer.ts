@@ -42,10 +42,11 @@ export function renderSignature3DArtwork(options: SignatureRenderOptions): void 
 
   drawPhoto(ctx, width, height, photoImage, atmosphere);
   drawPerspectiveRoute(ctx, width, height, activity, spatialRoute);
-  if (hudCard.enabled) drawTelemetryPanel(ctx, width, height, activity, hudCard);
+  // Keep the elevation trace behind the telemetry card so it never crosses the text.
   if (elevationConfig?.enabled && activity.elevationProfile?.length > 1) {
     drawElevation(ctx, width, height, activity, elevationConfig);
   }
+  if (hudCard.enabled) drawTelemetryPanel(ctx, width, height, activity, hudCard);
   if (isWatermarked) drawBrand(ctx, width, height, logoCorner);
   ctx.restore();
 }
