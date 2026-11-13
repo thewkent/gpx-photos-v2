@@ -206,29 +206,20 @@ function drawSculptedRoute(
   drawBeacon(ctx, route[0], height, 'START');
   drawBeacon(ctx, route[route.length - 1], height, 'FINISH');
 }
-function drawBeacon(ctx: CanvasRenderingContext2D, p: Point3, height: number, label: string) {
-  const r = Math.max(5, height * 0.008);
+function drawBeacon(ctx: CanvasRenderingContext2D, p: Point3, height: number, _label: string) {
+  const r = Math.max(3, height * 0.0045);
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,205,151,0.95)';
-  ctx.lineWidth = 1.4;
-  ctx.shadowColor = '#ff6a24';
-  ctx.shadowBlur = r * 2.5;
+  ctx.strokeStyle = 'rgba(255,220,183,0.92)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(p.x, p.y, r * 1.55, 0, Math.PI * 2);
+  ctx.arc(p.x, p.y, r * 1.8, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.fillStyle = '#fff2d9';
+  ctx.fillStyle = '#fff3df';
   ctx.beginPath();
-  ctx.arc(p.x, p.y, r * 0.48, 0, Math.PI * 2);
+  ctx.arc(p.x, p.y, r * 0.62, 0, Math.PI * 2);
   ctx.fill();
-  ctx.shadowBlur = 0;
-  ctx.font = `700 ${Math.max(7, height * 0.009)}px Arial, sans-serif`;
-  ctx.letterSpacing = '0.16em';
-  ctx.fillStyle = 'rgba(255,245,229,0.9)';
-  ctx.textAlign = 'center';
-  ctx.fillText(label, p.x, p.y - r * 2.7);
   ctx.restore();
 }
-
 function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   const radius = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
