@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "gpx.photos",
+  "version": "1.0.0",
+  "description": "GPX.photos 3D GPS route visualization and athletic telemetry overlay service.",
+  "homepage": "https://gpx.photos",
+  "endpoint": "https://gpx.photos/api/mcp",
+  "license": "Proprietary",
+  "capabilities": {
+    "tools": [
+      {
+        "name": "auto_layout_overlay",
+        "description": "Analyze an outdoor adventure or race photo to calculate non-overlapping bounding boxes for GPS map, elevation ribbon, and telemetry plaque without covering subjects.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "imageBase64": {
+              "type": "string",
+              "description": "Base64 encoded JPEG, PNG, or WebP photo string"
+            },
+            "mimeType": {
+              "type": "string",
+              "enum": ["image/jpeg", "image/png", "image/webp"],
+              "default": "image/jpeg"
+            }
+          },
+          "required": ["imageBase64"]
+        }
+      },
+      {
+        "name": "get_race_catalog",
+        "description": "Retrieve curated catalog of famous race presets (e.g. Sydney Marathon, Virgin Active Ride Joburg) with geographic coordinates, altitudes, and default styling.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "name": "configure_overlay_parameters",
+        "description": "Configure 3D road styling, HUD plaque dimensions, elevation ribbons, and color palettes for fine art photo rendering.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "style": {
+              "type": "string",
+              "enum": ["neon_rim", "transparent_line_color", "carbon_fiber", "frosted_ice"]
+            },
+            "routeRenderMode": {
+              "type": "string",
+              "enum": ["volumetric_tube", "molten_laser", "laser_ribbon", "minimal_vector"]
+            },
+            "routeColor": {
+              "type": "string",
+              "description": "Hex color code for the GPS route"
+            },
+            "cardScale": {
+              "type": "number",
+              "minimum": 0.6,
+              "maximum": 2.5
+            },
+            "verticalPosition": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 0.9
+            }
+          }
+        }
+      }
+    ],
+    "prompts": [],
+    "resources": [
+      {
+        "uri": "gpxphotos://docs/llms.txt",
+        "name": "LLMs Plaintext Guide",
+        "mimeType": "text/plain"
+      },
+      {
+        "uri": "gpxphotos://catalog/events",
+        "name": "Popular Race Catalog",
+        "mimeType": "application/json"
+      }
+    ]
+  }
+}

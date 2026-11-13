@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Agent & AI Content Directives (SEP-1649 / Agent-Ready Standard)
+Content-Signal: search=yes, ai-train=no
+
+# Discovery Resources
+Sitemap: https://gpx.photos/sitemap.xml
+Link: </llms.txt>; rel="alternate"; type="text/plain"
+Link: </.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"

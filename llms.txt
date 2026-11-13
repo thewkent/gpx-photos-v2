@@ -1,0 +1,27 @@
+# GPX.photos
+
+> Browser-based 3D GPS route visualization and athletic telemetry overlay studio. Converts GPX and FIT tracks from Garmin, Strava, Apple Watch, and COROS into fine art photo overlays with zero server uploads.
+
+## Core Pages
+
+- [Home](https://gpx.photos/): Homepage with feature overview, zero-upload privacy details, supported GPS devices, and preset race showcase.
+- [Studio](https://gpx.photos/#studio): Interactive 3D route placement editor, elevation ribbon customizer, and HUD telemetry plaque designer.
+- [Popular Races & Events](https://gpx.photos/#events): Preloaded marathon, gravel, and cycling classic route templates.
+- [About GPX.photos](https://gpx.photos/#about): Technical architecture, creator background, and 100% client-side privacy philosophy.
+- [Contact & Support](https://gpx.photos/#contact): Support email (mailto:support@gpx.photos) and technical assistance desk.
+- [Terms of Service](https://gpx.photos/#terms): Licensing, master export rights, and fair usage terms.
+- [Privacy Policy](https://gpx.photos/#privacy): Guarantee of zero data collection, no server uploads, and local canvas processing.
+
+## Agent Resources & Tools
+
+- [Full LLMs Specification](https://gpx.photos/llms-full.txt): Complete detailed reference for autonomous AI agents and LLM tool calling.
+- [MCP Server Card](https://gpx.photos/.well-known/mcp/server-card.json): Machine-readable Model Context Protocol server capabilities (SEP-1649).
+- [Markdown Representation](https://gpx.photos/?format=markdown): Plain markdown version of the homepage for token-efficient agent consumption.
+- [Vision Layout API](https://gpx.photos/api/auto-style): Server-side Gemini 2.5/Flash vision endpoint for athlete-aware widget placement.
+
+## Supported Devices & Formats
+
+- [Garmin Connect](https://connect.garmin.com/): GPX export from Edge and Forerunner devices.
+- [Strava](https://www.strava.com/): Web GPX export from any public or private activity.
+- [Apple Watch](https://www.apple.com/watch/): Workouts and Health app GPS GPX export.
+- [COROS & Wahoo](https://coros.com/): Outdoor GPS activity exports.
