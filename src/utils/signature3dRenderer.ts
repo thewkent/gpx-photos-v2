@@ -108,8 +108,8 @@ function drawPerspectiveRoute(
   const spanY = Math.max(0.0001, maxY - minY);
   // Fit the complete route into a deliberate footprint, then anchor that footprint
   // at the user's placement controls. Previously posX/posY were ignored here.
-  const targetW = width * 0.34 * config.scale;
-  const targetH = height * 0.30 * config.scale;
+  const targetW = width * 0.43 * config.scale;
+  const targetH = height * 0.34 * config.scale;
   const anchorX = width * Math.max(0.08, Math.min(0.92, config.posX));
   const anchorY = height * Math.max(0.12, Math.min(0.88, config.posY));
   const projected: ProjectedPoint[] = coords.map((point) => {
@@ -135,7 +135,7 @@ function drawPerspectiveRoute(
     ctx.beginPath();
     projected.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   };
-  const baseWidth = Math.max(2.4, Math.min(5.8, config.lineWidth * 1.12));
+  const baseWidth = Math.max(2.0, Math.min(4.6, config.lineWidth * 0.92));
   const color = '#ff641f';
 
   // Ground-contact shadow: offset and softened, separate from the luminous route body.
@@ -274,103 +274,102 @@ function drawTelemetryPanel(
 ) {
   const portrait = height > width;
   const scale = Math.max(0.72, Math.min(1.15, config.scale));
-  const panelW = Math.min(width * (portrait ? 0.78 : 0.35), 330 * scale);
-  const rowH = Math.max(23, height * 0.036);
-  const title = (config.headerTitle || activity.name || 'ACTIVITY').trim();
-  const configuredMetrics = config.customMetrics;
-  const metrics = (configuredMetrics?.length
-    ? configuredMetrics.map((item) => ({ label: item.label.replace(/:$/, '').toUpperCase(), value: item.value }))
-    : [
-        { label: 'DISTANCE', value: Number.isFinite(activity.distanceKm) ? `${activity.distanceKm.toFixed(1)} km` : '' },
-        { label: 'MOVING TIME', value: activity.durationFormatted || '' },
-        { label: 'ELEVATION GAIN', value: Number.isFinite(activity.elevationGainM) ? `+${Math.round(activity.elevationGainM).toLocaleString()} m` : '' },
-        { label: activity.sport === 'cycling' ? 'AVG SPEED' : 'AVG PACE', value: activity.avgPaceOrSpeed || '' },
-      ])
-    .filter((item) => item.label && item.value)
-    .slice(0, 4);
-  const showHeader = config.showHeader !== false;
-  const headerH = showHeader ? 52 : 18;
-  const panelH = 20 + headerH + rowH * metrics.length + 14;
+  const panelW = Math.min(width * (portrait ? 0.84 : 0.39), 390 * scale);
+  const distance = Number.isFinite(activity.distanceKm) && activity.distanceKm > 0
+    ? activity.distanceKm.toFixed(1)
+    : '—';
+  const unit = 'KM';
+  const metrics = [
+    { label: activity.sport === 'cycling' ? 'MOVING TIME' : 'TIME', value: activity.durationFormatted || '—' },
+    { label: activity.sport === 'cycling' ? 'AVG SPEED' : 'AVG PACE', value: activity.avgPaceOrSpeed || '—' },
+    { label: 'ELEVATION', value: Number.isFinite(activity.elevationGainM) ? `+${Math.round(activity.elevationGainM).toLocaleString()} M` : '—' },
+  ].filter((item) => item.value !== '—');
+  const panelH = portrait ? 190 : 176;
   const panelX = Math.max(16, Math.min(width - panelW - 16, width * config.posX));
   const panelY = Math.max(16, Math.min(height - panelH - 18, height * config.posY));
-  const radius = Math.max(12, width * 0.012);
+  const radius = Math.max(13, width * 0.014);
+  const pad = Math.max(17, panelW * 0.075);
+  const title = (config.headerTitle || activity.name || 'THE RIDE').trim().toUpperCase();
 
   ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,0.42)';
-  ctx.shadowBlur = height * 0.025;
-  ctx.shadowOffsetY = height * 0.008;
+  ctx.shadowColor = 'rgba(0,0,0,0.48)';
+  ctx.shadowBlur = height * 0.028;
+  ctx.shadowOffsetY = height * 0.009;
   roundedRect(ctx, panelX, panelY, panelW, panelH, radius);
   const glass = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY + panelH);
-  glass.addColorStop(0, 'rgba(13,18,24,0.78)');
-  glass.addColorStop(0.55, 'rgba(20,25,31,0.62)');
-  glass.addColorStop(1, 'rgba(7,11,16,0.72)');
+  glass.addColorStop(0, 'rgba(8,13,19,0.80)');
+  glass.addColorStop(0.52, 'rgba(13,18,24,0.68)');
+  glass.addColorStop(1, 'rgba(5,9,14,0.78)');
   ctx.fillStyle = glass;
   ctx.fill();
   ctx.restore();
 
   ctx.save();
   roundedRect(ctx, panelX, panelY, panelW, panelH, radius);
-  ctx.strokeStyle = 'rgba(255,255,255,0.30)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.20)';
   ctx.lineWidth = 1;
   ctx.stroke();
-  // Fine illuminated top edge and a restrained warm glass reflection.
-  const edge = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY);
-  edge.addColorStop(0, 'rgba(255,110,43,0.95)');
-  edge.addColorStop(0.48, 'rgba(255,190,130,0.30)');
-  edge.addColorStop(1, 'rgba(255,255,255,0.04)');
-  ctx.strokeStyle = edge;
+  const topEdge = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY);
+  topEdge.addColorStop(0, '#ff6a24');
+  topEdge.addColorStop(0.34, 'rgba(255,150,90,0.36)');
+  topEdge.addColorStop(1, 'rgba(255,255,255,0.04)');
+  ctx.strokeStyle = topEdge;
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(panelX + radius, panelY + 1);
   ctx.lineTo(panelX + panelW - radius, panelY + 1);
   ctx.stroke();
-  ctx.fillStyle = '#ff6a24';
-  roundedRect(ctx, panelX + 1, panelY + 13, 3, panelH - 26, 2);
-  ctx.fill();
 
-  const pad = Math.max(15, panelW * 0.075);
-  const titleSize = Math.max(11, Math.min(19, panelW * 0.047));
+  // Editorial event kicker.
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  let dividerY = panelY + 15;
-  if (showHeader) {
-    ctx.fillStyle = 'rgba(255,255,255,0.56)';
-    ctx.font = `600 ${Math.max(8, titleSize * 0.52)}px Arial, sans-serif`;
-    ctx.letterSpacing = '0.17em';
-    ctx.fillText('ACTIVITY', panelX + pad, panelY + 19);
+  ctx.fillStyle = '#ff8246';
+  ctx.font = `700 ${Math.max(8, panelW * 0.027)}px Arial, sans-serif`;
+  ctx.letterSpacing = '0.20em';
+  ctx.fillText(title.slice(0, 34), panelX + pad, panelY + 25);
 
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `700 ${titleSize}px Arial, sans-serif`;
-    ctx.letterSpacing = '0.01em';
-    let shortTitle = title;
-    while (ctx.measureText(shortTitle).width > panelW - pad * 2 && shortTitle.length > 8) {
-      shortTitle = shortTitle.slice(0, -2);
-    }
-    ctx.fillText(shortTitle, panelX + pad, panelY + 37);
-    dividerY = panelY + 48;
-  }
-  ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+  // The achievement is the headline, not another row in a dashboard.
+  const numberSize = Math.min(panelW * 0.235, panelH * 0.49);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = `800 ${numberSize}px Arial, sans-serif`;
+  ctx.letterSpacing = '-0.055em';
+  ctx.fillText(distance, panelX + pad - 2, panelY + 91);
+  const numberWidth = ctx.measureText(distance).width;
+  ctx.fillStyle = '#ff7a35';
+  ctx.font = `700 ${Math.max(11, numberSize * 0.28)}px Arial, sans-serif`;
+  ctx.letterSpacing = '0.10em';
+  ctx.fillText(unit, panelX + pad + numberWidth + 7, panelY + 89);
+
+  // Fine divider creates a clear transition to supporting details.
+  const dividerY = panelY + 108;
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(panelX + pad, dividerY);
   ctx.lineTo(panelX + panelW - pad, dividerY);
   ctx.stroke();
 
-  metrics.forEach((metric, index) => {
-    const y = dividerY + 18 + index * rowH;
+  const gap = 13;
+  const usableW = panelW - pad * 2;
+  const colW = (usableW - gap) / 2;
+  const rowY = dividerY + 24;
+  metrics.slice(0, 3).forEach((metric, index) => {
+    const col = index % 2;
+    const row = Math.floor(index / 2);
+    const x = panelX + pad + col * (colW + gap);
+    const y = rowY + row * 30;
     ctx.textAlign = 'left';
-    ctx.fillStyle = 'rgba(255,255,255,0.57)';
-    ctx.font = `600 ${Math.max(8, titleSize * 0.53)}px Arial, sans-serif`;
-    ctx.letterSpacing = '0.10em';
-    ctx.fillText(metric.label, panelX + pad, y);
-    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255,255,255,0.48)';
+    ctx.font = `600 ${Math.max(7, panelW * 0.022)}px Arial, sans-serif`;
+    ctx.letterSpacing = '0.12em';
+    ctx.fillText(metric.label, x, y);
     ctx.fillStyle = '#ffffff';
-    ctx.font = `600 ${Math.max(11, titleSize * 0.78)}px Arial, sans-serif`;
+    ctx.font = `700 ${Math.max(10, panelW * 0.034)}px Arial, sans-serif`;
     ctx.letterSpacing = '0';
-    ctx.fillText(metric.value, panelX + panelW - pad, y);
+    ctx.fillText(metric.value, x, y + 14);
   });
   ctx.restore();
 }
-
 function drawElevation(
   ctx: CanvasRenderingContext2D,
   width: number,
