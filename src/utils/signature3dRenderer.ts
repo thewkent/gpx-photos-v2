@@ -99,7 +99,7 @@ function drawPerspectiveRoute(
   const yaw = (config.yawAngle * Math.PI) / 180;
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
-  const pitch = Math.max(0.24, Math.min(0.78, Math.sin((Math.max(14, config.tiltAngle) * Math.PI) / 180)));
+  const pitch = Math.max(0.42, Math.min(0.82, 0.38 + Math.sin((Math.max(14, config.tiltAngle) * Math.PI) / 180) * 0.72));
   const minX = Math.min(...coords.map((p) => p.x));
   const maxX = Math.max(...coords.map((p) => p.x));
   const minY = Math.min(...coords.map((p) => p.y));
@@ -108,8 +108,8 @@ function drawPerspectiveRoute(
   const spanY = Math.max(0.0001, maxY - minY);
   // Fit the complete route into a deliberate footprint, then anchor that footprint
   // at the user's placement controls. Previously posX/posY were ignored here.
-  const targetW = width * 0.24 * config.scale;
-  const targetH = height * 0.23 * config.scale;
+  const targetW = width * 0.34 * config.scale;
+  const targetH = height * 0.30 * config.scale;
   const anchorX = width * Math.max(0.08, Math.min(0.92, config.posX));
   const anchorY = height * Math.max(0.12, Math.min(0.88, config.posY));
   const projected: ProjectedPoint[] = coords.map((point) => {
@@ -135,7 +135,7 @@ function drawPerspectiveRoute(
     ctx.beginPath();
     projected.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   };
-  const baseWidth = Math.max(1.8, Math.min(4.6, config.lineWidth * 0.92));
+  const baseWidth = Math.max(2.4, Math.min(5.8, config.lineWidth * 1.12));
   const color = '#ff641f';
 
   // Ground-contact shadow: offset and softened, separate from the luminous route body.
@@ -143,11 +143,11 @@ function drawPerspectiveRoute(
   ctx.translate(2, Math.max(3, height * 0.009));
   path();
   ctx.strokeStyle = 'rgba(0,0,0,0.78)';
-  ctx.lineWidth = baseWidth * 2.8;
+  ctx.lineWidth = baseWidth * 3.8;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.shadowColor = 'rgba(0,0,0,0.9)';
-  ctx.shadowBlur = Math.max(8, height * 0.018);
+  ctx.shadowBlur = Math.max(10, height * 0.024);
   ctx.stroke();
   ctx.restore();
 
@@ -156,10 +156,10 @@ function drawPerspectiveRoute(
   path();
   ctx.globalCompositeOperation = 'screen';
   ctx.strokeStyle = color;
-  ctx.lineWidth = baseWidth * 2.1;
-  ctx.globalAlpha = 0.16 * Math.max(0.2, Math.min(1.2, config.glowIntensity));
+  ctx.lineWidth = baseWidth * 3.0;
+  ctx.globalAlpha = 0.22 * Math.max(0.2, Math.min(1.2, config.glowIntensity));
   ctx.shadowColor = color;
-  ctx.shadowBlur = height * 0.014;
+  ctx.shadowBlur = height * 0.022;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke();
@@ -168,8 +168,8 @@ function drawPerspectiveRoute(
   // Dark dimensional underside.
   ctx.save();
   path();
-  ctx.strokeStyle = '#713014';
-  ctx.lineWidth = baseWidth * 1.85;
+  ctx.strokeStyle = '#3a1b12';
+  ctx.lineWidth = baseWidth * 2.25;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.shadowColor = 'rgba(0,0,0,0.55)';
@@ -186,7 +186,7 @@ function drawPerspectiveRoute(
   body.addColorStop(0.35, '#ff8a32');
   body.addColorStop(1, '#e84b0c');
   ctx.strokeStyle = body;
-  ctx.lineWidth = baseWidth * 1.2;
+  ctx.lineWidth = baseWidth * 1.42;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke();
@@ -195,12 +195,34 @@ function drawPerspectiveRoute(
   // Fine specular edge, not a white-hot centre line.
   ctx.save();
   path();
-  ctx.strokeStyle = 'rgba(255,239,211,0.78)';
-  ctx.lineWidth = Math.max(0.8, baseWidth * 0.22);
+  ctx.strokeStyle = 'rgba(255,247,225,0.96)';
+  ctx.lineWidth = Math.max(1.0, baseWidth * 0.30);
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke();
   ctx.restore();
+
+  // Directional glints give the route a sense of movement without cluttering the map.
+  for (let i = 1; i < projected.length - 1; i += Math.max(1, Math.floor(projected.length / 18))) {
+    const p = projected[i];
+    const before = projected[Math.max(0, i - 1)];
+    const after = projected[Math.min(projected.length - 1, i + 1)];
+    const angle = Math.atan2(after.y - before.y, after.x - before.x);
+    const size = Math.max(2.2, baseWidth * 0.62);
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(angle);
+    ctx.globalAlpha = 0.72;
+    ctx.fillStyle = '#fff2dc';
+    ctx.beginPath();
+    ctx.moveTo(size, 0);
+    ctx.lineTo(-size * 0.65, -size * 0.7);
+    ctx.lineTo(-size * 0.25, 0);
+    ctx.lineTo(-size * 0.65, size * 0.7);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
 
   drawRouteMarker(ctx, projected[0], '#fff0d5', color, height);
   drawRouteMarker(ctx, projected[projected.length - 1], '#ffffff', '#ff641f', height);
@@ -288,8 +310,19 @@ function drawTelemetryPanel(
 
   ctx.save();
   roundedRect(ctx, panelX, panelY, panelW, panelH, radius);
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.30)';
   ctx.lineWidth = 1;
+  ctx.stroke();
+  // Fine illuminated top edge and a restrained warm glass reflection.
+  const edge = ctx.createLinearGradient(panelX, panelY, panelX + panelW, panelY);
+  edge.addColorStop(0, 'rgba(255,110,43,0.95)');
+  edge.addColorStop(0.48, 'rgba(255,190,130,0.30)');
+  edge.addColorStop(1, 'rgba(255,255,255,0.04)');
+  ctx.strokeStyle = edge;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(panelX + radius, panelY + 1);
+  ctx.lineTo(panelX + panelW - radius, panelY + 1);
   ctx.stroke();
   ctx.fillStyle = '#ff6a24';
   roundedRect(ctx, panelX + 1, panelY + 13, 3, panelH - 26, 2);
