@@ -65,10 +65,10 @@ export const V2_VISUAL_PRESETS: V2VisualPreset[] = [
     },
     elevationConfig: {
       enabled: true,
-      posY: 0.94,
-      height: 46,
+      posY: 0.84,
+      height: 34,
       style: 'glass_ribbon',
-      opacity: 0.82,
+      opacity: 0.68,
       showLabels: true,
       widthPercent: 0.9,
     },
