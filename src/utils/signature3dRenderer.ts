@@ -279,12 +279,19 @@ function drawTelemetryPanel(
     ? activity.distanceKm.toFixed(1)
     : '—';
   const unit = 'KM';
-  const metrics = [
+  const defaultMetrics = [
     { label: activity.sport === 'cycling' ? 'MOVING TIME' : 'TIME', value: activity.durationFormatted || '—' },
     { label: activity.sport === 'cycling' ? 'AVG SPEED' : 'AVG PACE', value: activity.avgPaceOrSpeed || '—' },
     { label: 'ELEVATION', value: Number.isFinite(activity.elevationGainM) ? `+${Math.round(activity.elevationGainM).toLocaleString()} M` : '—' },
-  ].filter((item) => item.value !== '—');
-  const panelH = portrait ? 190 : 176;
+  ];
+  const metrics = (config.customMetrics?.length
+    ? config.customMetrics
+        .filter((item) => !/distance/i.test(item.label))
+        .map((item) => ({ label: item.label.replace(/:$/, '').toUpperCase(), value: item.value }))
+    : defaultMetrics)
+    .filter((item) => item.label && item.value && item.value !== '—')
+    .slice(0, 3);
+  const panelH = portrait ? 208 : 194;
   const panelX = Math.max(16, Math.min(width - panelW - 16, width * config.posX));
   const panelY = Math.max(16, Math.min(height - panelH - 18, height * config.posY));
   const radius = Math.max(13, width * 0.014);
