@@ -270,7 +270,7 @@ app.post('/api/ai-artwork', async (req, res) => {
     if (typeof imageBase64 !== 'string' || !imageBase64) {
       return res.status(400).json({ error: 'Please provide a source photograph.' });
     }
-    if (imageBase64.length > 22_000_000) {
+    if (imageBase64.length > 23_500_000) {
       return res.status(413).json({ error: 'This image is too large. Please use a photo under 16 MB.' });
     }
 
