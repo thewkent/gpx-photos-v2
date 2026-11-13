@@ -15,6 +15,7 @@ import { V2PhotoSection } from './V2PhotoSection';
 import { V2LayoutSection } from './V2LayoutSection';
 import { V2StyleSection } from './V2StyleSection';
 import { V2StatisticsSection } from './V2StatisticsSection';
+import { AIArtworkSection } from './AIArtworkSection';
 import {
   Image as ImageIcon,
   LayoutGrid,
@@ -27,7 +28,7 @@ import {
   Sliders,
 } from 'lucide-react';
 
-export type V2EditorTab = 'photo' | 'layout' | 'style' | 'statistics';
+export type V2EditorTab = 'photo' | 'layout' | 'style' | 'statistics' | 'ai-art';
 
 interface V2StudioEditorProps {
   activity: ActivityData;
@@ -64,6 +65,7 @@ const SECTION_TABS: {
   { id: 'layout', label: 'Layout', icon: LayoutGrid },
   { id: 'style', label: 'Style', icon: Sparkles },
   { id: 'statistics', label: 'Statistics', icon: BarChart3 },
+  { id: 'ai-art', label: 'AI Art', icon: Wand2 },
 ];
 
 export const V2StudioEditor: React.FC<V2StudioEditorProps> = ({
@@ -248,7 +250,7 @@ export const V2StudioEditor: React.FC<V2StudioEditorProps> = ({
         <aside className="w-full lg:w-[390px] xl:w-[410px] shrink-0 bg-[#121215] flex flex-col lg:h-full">
           {/* 4 Organised Section Tabs */}
           <div className="p-3 bg-[#141418] border-b border-white/[0.08] shrink-0">
-            <div className="grid grid-cols-4 gap-1 p-1 bg-zinc-950 rounded-xl border border-white/[0.08]">
+            <div className="grid grid-cols-5 gap-1 p-1 bg-zinc-950 rounded-xl border border-white/[0.08]">
               {SECTION_TABS.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -326,6 +328,10 @@ export const V2StudioEditor: React.FC<V2StudioEditorProps> = ({
                 hudCard={hudCard}
                 onUpdateHudCard={onUpdateHudCard}
               />
+            )}
+
+            {activeTab === 'ai-art' && (
+              <AIArtworkSection photoUrl={photoUrl} onSelectPhoto={onSelectPhoto} activity={activity} />
             )}
           </div>
 
