@@ -19,7 +19,7 @@ async function imageToDataUrl(url: string): Promise<{ dataUrl: string; mimeType:
   const response = await fetch(url);
   if (!response.ok) throw new Error('Could not load the source photo. Try uploading it again.');
   const blob = await response.blob();
-  if (!blob.type.startsWith('image/')) throw new Error('The selected file is not a supported image.');
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(blob.type)) throw new Error('For AI artwork, please use a JPEG, PNG or WebP photo.');
   if (blob.size > 16 * 1024 * 1024) throw new Error('Please use a photo smaller than 16 MB for this prototype.');
 
   const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -148,6 +148,12 @@ export const AIArtworkSection: React.FC<AIArtworkSectionProps> = ({ photoUrl, on
         </p>
       </div>
 
+      <div className="rounded-lg border border-amber-400/15 bg-amber-400/[0.04] p-3">
+        <p className="text-[10px] leading-relaxed text-zinc-400">
+          <strong className="text-amber-200">Privacy:</strong> Creating AI artwork sends this photo to Google's Gemini image API for processing. gpx.photos does not save the uploaded image. AI may subtly change photographic details, so check the result before exporting.
+        </p>
+      </div>
+
       <button type="button" onClick={generate} disabled={isGenerating} className="w-full flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-lg shadow-orange-950/30 transition-all disabled:opacity-60 disabled:cursor-wait">
         {isGenerating ? <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" /> Creating your artwork...</> : <><Wand2 className="w-4 h-4" /> {isShowingGenerated ? 'Try another treatment' : 'Create AI artwork'}</>}
       </button>
@@ -160,11 +166,6 @@ export const AIArtworkSection: React.FC<AIArtworkSectionProps> = ({ photoUrl, on
 
       {error && <div role="alert" className="rounded-lg border border-rose-500/25 bg-rose-950/30 p-3 text-xs leading-relaxed text-rose-200">{error}</div>}
 
-      <div className="rounded-lg border border-amber-400/15 bg-amber-400/[0.04] p-3">
-        <p className="text-[10px] leading-relaxed text-zinc-400">
-          <strong className="text-amber-200">Privacy:</strong> When you create AI artwork, this photo is sent to Google's Gemini image API for processing. It is not saved by gpx.photos. AI may subtly change photographic details, so check the result before exporting.
-        </p>
-      </div>
       <p className="text-[10px] text-zinc-600 leading-relaxed">Prototype mode · One image generation per click · Requires GEMINI_API_KEY on the server.</p>
     </div>
   );
