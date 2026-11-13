@@ -98,22 +98,33 @@ function drawPerspectiveRoute(
   const yaw = (config.yawAngle * Math.PI) / 180;
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
-  const pitch = Math.max(0.28, Math.min(0.92, Math.sin((Math.max(18, config.tiltAngle) * Math.PI) / 180)));
-  const projected: ProjectedPoint[] = coords.map((point, index) => {
-    const px = point.x - 0.5;
-    const py = point.y - 0.5;
-    const rx = px * cos - py * sin;
-    const ry = px * sin + py * cos;
-    const depth = Math.max(0, Math.min(1, point.y));
-    // The near edge of the route plane is larger; the far edge recedes naturally.
-    const perspective = 0.68 + depth * 0.48;
+  const pitch = Math.max(0.24, Math.min(0.78, Math.sin((Math.max(14, config.tiltAngle) * Math.PI) / 180)));
+  const minX = Math.min(...coords.map((p) => p.x));
+  const maxX = Math.max(...coords.map((p) => p.x));
+  const minY = Math.min(...coords.map((p) => p.y));
+  const maxY = Math.max(...coords.map((p) => p.y));
+  const spanX = Math.max(0.0001, maxX - minX);
+  const spanY = Math.max(0.0001, maxY - minY);
+  // Fit the complete route into a deliberate footprint, then anchor that footprint
+  // at the user's placement controls. Previously posX/posY were ignored here.
+  const targetW = width * 0.24 * config.scale;
+  const targetH = height * 0.23 * config.scale;
+  const anchorX = width * Math.max(0.08, Math.min(0.92, config.posX));
+  const anchorY = height * Math.max(0.12, Math.min(0.88, config.posY));
+  const projected: ProjectedPoint[] = coords.map((point) => {
+    const nx = ((point.x - minX) / spanX) - 0.5;
+    const ny = ((point.y - minY) / spanY) - 0.5;
+    const rx = nx * cos - ny * sin;
+    const ry = nx * sin + ny * cos;
+    const depth = Math.max(0, Math.min(1, (point.y - minY) / spanY));
+    const perspective = 0.84 + depth * 0.22;
     const elevation = point.elevation !== undefined && maxElevation > minElevation
       ? (point.elevation - minElevation) / (maxElevation - minElevation)
       : 0;
-    const lift = elevation * (config.elevation3dScale ?? 0.22) * height * 0.035 * pitch;
+    const lift = elevation * (config.elevation3dScale ?? 0.22) * height * 0.018 * pitch;
     return {
-      x: width * 0.5 + rx * width * 0.43 * perspective * config.scale,
-      y: height * (0.56 + ry * 0.58 * pitch) - lift,
+      x: anchorX + rx * targetW * perspective,
+      y: anchorY + ry * targetH * pitch - lift,
       depth,
       elevation,
     };
@@ -123,7 +134,7 @@ function drawPerspectiveRoute(
     ctx.beginPath();
     projected.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
   };
-  const baseWidth = Math.max(2.2, Math.min(7.5, config.lineWidth * 1.25));
+  const baseWidth = Math.max(1.8, Math.min(4.6, config.lineWidth * 0.92));
   const color = '#ff641f';
 
   // Ground-contact shadow: offset and softened, separate from the luminous route body.
@@ -144,10 +155,10 @@ function drawPerspectiveRoute(
   path();
   ctx.globalCompositeOperation = 'screen';
   ctx.strokeStyle = color;
-  ctx.lineWidth = baseWidth * 3.4;
-  ctx.globalAlpha = 0.28 * Math.max(0.2, config.glowIntensity);
+  ctx.lineWidth = baseWidth * 2.1;
+  ctx.globalAlpha = 0.16 * Math.max(0.2, Math.min(1.2, config.glowIntensity));
   ctx.shadowColor = color;
-  ctx.shadowBlur = height * 0.025;
+  ctx.shadowBlur = height * 0.014;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke();
@@ -240,8 +251,8 @@ function drawTelemetryPanel(
 ) {
   const portrait = height > width;
   const scale = Math.max(0.72, Math.min(1.15, config.scale));
-  const panelW = Math.min(width * (portrait ? 0.72 : 0.43), 410 * scale);
-  const rowH = Math.max(27, height * 0.043);
+  const panelW = Math.min(width * (portrait ? 0.78 : 0.35), 330 * scale);
+  const rowH = Math.max(23, height * 0.036);
   const title = (config.headerTitle || activity.name || 'ACTIVITY').trim();
   const configuredMetrics = config.customMetrics;
   const metrics = (configuredMetrics?.length
@@ -255,7 +266,7 @@ function drawTelemetryPanel(
     .filter((item) => item.label && item.value)
     .slice(0, 4);
   const showHeader = config.showHeader !== false;
-  const headerH = showHeader ? 62 : 22;
+  const headerH = showHeader ? 52 : 18;
   const panelH = 20 + headerH + rowH * metrics.length + 14;
   const panelX = Math.max(16, Math.min(width - panelW - 16, width * config.posX));
   const panelY = Math.max(16, Math.min(height - panelH - 18, height * config.posY));
@@ -287,12 +298,12 @@ function drawTelemetryPanel(
   const titleSize = Math.max(11, Math.min(19, panelW * 0.047));
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  let dividerY = panelY + 18;
+  let dividerY = panelY + 15;
   if (showHeader) {
     ctx.fillStyle = 'rgba(255,255,255,0.56)';
     ctx.font = `600 ${Math.max(8, titleSize * 0.52)}px Arial, sans-serif`;
     ctx.letterSpacing = '0.17em';
-    ctx.fillText('ACTIVITY', panelX + pad, panelY + 23);
+    ctx.fillText('ACTIVITY', panelX + pad, panelY + 19);
 
     ctx.fillStyle = '#ffffff';
     ctx.font = `700 ${titleSize}px Arial, sans-serif`;
@@ -301,8 +312,8 @@ function drawTelemetryPanel(
     while (ctx.measureText(shortTitle).width > panelW - pad * 2 && shortTitle.length > 8) {
       shortTitle = shortTitle.slice(0, -2);
     }
-    ctx.fillText(shortTitle, panelX + pad, panelY + 44);
-    dividerY = panelY + 57;
+    ctx.fillText(shortTitle, panelX + pad, panelY + 37);
+    dividerY = panelY + 48;
   }
   ctx.strokeStyle = 'rgba(255,255,255,0.16)';
   ctx.beginPath();
