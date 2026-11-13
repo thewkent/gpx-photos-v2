@@ -253,6 +253,88 @@ Verify: no widget intersects a no-go zone, no widgets intersect each other, all 
   }
 });
 
+// AI post-production: the image model edits the photographic background only.
+// GPX geometry and statistics remain in the deterministic renderer.
+app.post('/api/ai-artwork', async (req, res) => {
+  try {
+    if (!ai) return res.status(503).json({ error: 'GEMINI_API_KEY is not configured on the server.' });
+
+    const body = req.body || {};
+    const imageBase64 = body.imageBase64;
+    const mimeType = body.mimeType || 'image/jpeg';
+    const style = body.style || 'cinematic';
+    const activityName = typeof body.activityName === 'string' ? body.activityName.slice(0, 80) : 'outdoor activity';
+    const sport = typeof body.sport === 'string' ? body.sport : 'outdoor sport';
+    const aspectRatio = body.aspectRatio || '3:2';
+
+    if (typeof imageBase64 !== 'string' || !imageBase64) {
+      return res.status(400).json({ error: 'Please provide a source photograph.' });
+    }
+    if (imageBase64.length > 22_000_000) {
+      return res.status(413).json({ error: 'This image is too large. Please use a photo under 16 MB.' });
+    }
+
+    const styleDirections: Record<string, string> = {
+      cinematic: 'CINEMATIC: premium endurance-sports campaign photography. Add believable directional light, subtle atmospheric depth, refined highlight bloom and a restrained warm/cool cinematic grade. Effects must feel physically present, never like stickers or neon graphics.',
+      terrain: 'TERRAIN: create a sophisticated terrain-inspired photographic finish. Very subtle topographic contour relief and atmospheric layers may echo the surrounding landscape, integrated like a delicate photographic double exposure. Keep it sparse, elegant and secondary to the athlete.',
+      editorial: 'EDITORIAL: art-direct this as a premium outdoor-sports magazine photograph without adding cover text. Use beautiful natural tonal separation, controlled contrast, rich but believable colour, restrained film texture and elegant edge lighting.'
+    };
+    if (!Object.prototype.hasOwnProperty.call(styleDirections, style)) {
+      return res.status(400).json({ error: 'Unknown artwork style.' });
+    }
+
+    const cleanBase64 = imageBase64.replace(/^data:image\/[a-zA-Z0-9.+-]+;base64,/, '');
+    const safeMimeType = /^image\/(jpeg|png|webp)$/.test(mimeType) ? mimeType : 'image/jpeg';
+    const safeAspectRatio = ['1:1','3:2','2:3','4:3','3:4','16:9','9:16','21:9'].includes(aspectRatio) ? aspectRatio : '3:2';
+    const prompt = [
+      'You are a world-class photographic post-production artist working on a real ' + sport + ' achievement photograph titled "' + activityName + '".',
+      'EDIT THE PROVIDED PHOTOGRAPH. This is image-to-image post-production, not a request to invent a new scene.',
+      'NON-NEGOTIABLE PRESERVATION:',
+      '- Preserve the actual athlete/person, face, identity, body shape, pose, clothing, helmet, bike/equipment, race bib and distinctive details exactly.',
+      '- Preserve the original camera viewpoint, composition, environment, landmarks and moment.',
+      '- Do not add people, bikes, limbs, equipment or objects.',
+      '- Keep the photograph recognisably the same photograph. Do not turn it into CGI, anime, illustration or fantasy art.',
+      '- Do not add text, numbers, typography, logos, badges, watermarks, maps, GPS routes, route lines, charts or statistics. These are added separately from verified source data.',
+      '- No broad neon strokes, thick ribbons, arrows, busy HUD graphics or fake road markings.',
+      '- Keep the original aspect ratio (' + safeAspectRatio + ').',
+      'ART DIRECTION:',
+      styleDirections[style],
+      'The result should feel like expensive, restrained, world-class sports photography finishing: the athlete remains the hero, the real moment remains authentic, and effects support rather than compete with the photograph. Output only the finished edited image.'
+    ].join('\n');
+
+    const model = process.env.GEMINI_IMAGE_MODEL || 'gemini-3.1-flash-image';
+    const response = await ai.models.generateContent({
+      model,
+      contents: [{
+        role: 'user',
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType: safeMimeType, data: cleanBase64 } }
+        ]
+      }],
+      config: {
+        responseModalities: ['IMAGE'],
+        imageConfig: { aspectRatio: safeAspectRatio, imageSize: '2K' }
+      }
+    });
+
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    const imagePart = parts.find((part: any) => part.inlineData?.data);
+    if (!imagePart?.inlineData?.data) {
+      return res.status(502).json({ error: 'The image model did not return an edited image. Please try again.' });
+    }
+    return res.json({
+      imageDataUrl: 'data:' + (imagePart.inlineData.mimeType || 'image/png') + ';base64,' + imagePart.inlineData.data,
+      model,
+      style
+    });
+  } catch (err: unknown) {
+    const errorMsg = err instanceof Error ? err.message : 'Unknown AI image generation error';
+    console.error('AI artwork generation error:', errorMsg);
+    return res.status(502).json({ error: errorMsg });
+  }
+});
+
 // RFC 8288 Discovery Link Headers for Autonomous Agents
 const AGENT_LINK_HEADERS = [
   '</llms.txt>; rel="alternate"; type="text/plain"',
