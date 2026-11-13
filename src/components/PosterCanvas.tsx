@@ -8,6 +8,7 @@ import {
   LogoCorner,
 } from '../types/poster';
 import { renderSpatialArtwork } from '../utils/canvasRenderer';
+import { renderSignature3DArtwork } from '../utils/signature3dRenderer';
 import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 interface PosterCanvasProps {
@@ -23,6 +24,7 @@ interface PosterCanvasProps {
   containerClassName?: string;
   canvasMaxHeightClass?: string;
   toolbarExtras?: React.ReactNode;
+  renderEngine?: 'classic' | 'signature';
 }
 
 export const PosterCanvas: React.FC<PosterCanvasProps> = ({
@@ -38,6 +40,7 @@ export const PosterCanvas: React.FC<PosterCanvasProps> = ({
   containerClassName = '',
   canvasMaxHeightClass = 'max-h-[72vh]',
   toolbarExtras,
+  renderEngine = 'classic',
 }) => {
   const [zoomLevel, setZoomLevel] = useState<number>(1);
   const [photoImage, setPhotoImage] = useState<HTMLImageElement | null>(null);
@@ -72,7 +75,7 @@ export const PosterCanvas: React.FC<PosterCanvasProps> = ({
     const baseW = 960;
     const baseH = Math.round(baseW / activeAspect);
 
-    renderSpatialArtwork({
+    const renderOptions = {
       canvas,
       width: baseW,
       height: baseH,
@@ -85,8 +88,10 @@ export const PosterCanvas: React.FC<PosterCanvasProps> = ({
       highDpiScale: window.devicePixelRatio || 2,
       isWatermarked,
       logoCorner,
-    });
-  }, [activity, spatialRoute, hudCard, atmosphere, elevationConfig, photoImage, isWatermarked, logoCorner, activeAspect, canvasRef]);
+    };
+    if (renderEngine === 'signature') renderSignature3DArtwork(renderOptions);
+    else renderSpatialArtwork(renderOptions);
+  }, [activity, spatialRoute, hudCard, atmosphere, elevationConfig, photoImage, isWatermarked, logoCorner, activeAspect, canvasRef, renderEngine]);
 
   return (
     <div className={`flex flex-col h-full items-center justify-between p-4 sm:p-6 select-none ${containerClassName}`}>
