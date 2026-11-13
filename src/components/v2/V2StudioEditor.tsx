@@ -240,6 +240,7 @@ export const V2StudioEditor: React.FC<V2StudioEditorProps> = ({
             containerClassName="p-3 sm:p-5 lg:p-6"
             canvasMaxHeightClass="max-h-[48vh] sm:max-h-[56vh] lg:max-h-[79vh]"
             toolbarExtras={previewToolbar}
+            renderEngine="signature"
           />
         </section>
 
