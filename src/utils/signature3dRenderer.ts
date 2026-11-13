@@ -98,21 +98,22 @@ function drawPerspectiveRoute(
   const yaw = (config.yawAngle * Math.PI) / 180;
   const cos = Math.cos(yaw);
   const sin = Math.sin(yaw);
-  const pitch = Math.max(0.12, Math.min(0.9, Math.sin((Math.max(8, config.tiltAngle) * Math.PI) / 180)));
+  const pitch = Math.max(0.28, Math.min(0.92, Math.sin((Math.max(18, config.tiltAngle) * Math.PI) / 180)));
   const projected: ProjectedPoint[] = coords.map((point, index) => {
     const px = point.x - 0.5;
     const py = point.y - 0.5;
     const rx = px * cos - py * sin;
     const ry = px * sin + py * cos;
     const depth = Math.max(0, Math.min(1, point.y));
-    const perspective = 0.62 + depth * 0.55;
+    // The near edge of the route plane is larger; the far edge recedes naturally.
+    const perspective = 0.68 + depth * 0.48;
     const elevation = point.elevation !== undefined && maxElevation > minElevation
       ? (point.elevation - minElevation) / (maxElevation - minElevation)
       : 0;
     const lift = elevation * (config.elevation3dScale ?? 0.22) * height * 0.035 * pitch;
     return {
       x: width * 0.5 + rx * width * 0.43 * perspective * config.scale,
-      y: height * (0.60 + ry * 0.31 * pitch) - lift,
+      y: height * (0.56 + ry * 0.58 * pitch) - lift,
       depth,
       elevation,
     };
@@ -127,8 +128,8 @@ function drawPerspectiveRoute(
 
   // Ground-contact shadow: offset and softened, separate from the luminous route body.
   ctx.save();
-  path();
   ctx.translate(2, Math.max(3, height * 0.009));
+  path();
   ctx.strokeStyle = 'rgba(0,0,0,0.78)';
   ctx.lineWidth = baseWidth * 2.8;
   ctx.lineCap = 'round';
@@ -239,18 +240,25 @@ function drawTelemetryPanel(
 ) {
   const portrait = height > width;
   const scale = Math.max(0.72, Math.min(1.15, config.scale));
-  const panelW = Math.min(width * (portrait ? 0.64 : 0.40), 390 * scale);
-  const panelX = Math.max(width * 0.045, width * config.posX);
-  const panelY = Math.max(height * 0.045, height * Math.min(config.posY, 0.34));
-  const rowH = Math.max(28, height * 0.046);
+  const panelW = Math.min(width * (portrait ? 0.72 : 0.43), 410 * scale);
+  const rowH = Math.max(27, height * 0.043);
   const title = (config.headerTitle || activity.name || 'ACTIVITY').trim();
-  const metrics = [
-    { label: 'DISTANCE', value: Number.isFinite(activity.distanceKm) ? `${activity.distanceKm.toFixed(1)} km` : '' },
-    { label: 'MOVING TIME', value: activity.durationFormatted || '' },
-    { label: 'ELEVATION GAIN', value: Number.isFinite(activity.elevationGainM) ? `+${Math.round(activity.elevationGainM).toLocaleString()} m` : '' },
-    { label: activity.sport === 'cycling' ? 'AVG SPEED' : 'AVG PACE', value: activity.avgPaceOrSpeed || '' },
-  ].filter((item) => item.value).slice(0, 4);
-  const panelH = 62 + rowH * metrics.length + 18;
+  const configuredMetrics = config.customMetrics;
+  const metrics = (configuredMetrics?.length
+    ? configuredMetrics.map((item) => ({ label: item.label.replace(/:$/, '').toUpperCase(), value: item.value }))
+    : [
+        { label: 'DISTANCE', value: Number.isFinite(activity.distanceKm) ? `${activity.distanceKm.toFixed(1)} km` : '' },
+        { label: 'MOVING TIME', value: activity.durationFormatted || '' },
+        { label: 'ELEVATION GAIN', value: Number.isFinite(activity.elevationGainM) ? `+${Math.round(activity.elevationGainM).toLocaleString()} m` : '' },
+        { label: activity.sport === 'cycling' ? 'AVG SPEED' : 'AVG PACE', value: activity.avgPaceOrSpeed || '' },
+      ])
+    .filter((item) => item.label && item.value)
+    .slice(0, 4);
+  const showHeader = config.showHeader !== false;
+  const headerH = showHeader ? 62 : 22;
+  const panelH = 20 + headerH + rowH * metrics.length + 14;
+  const panelX = Math.max(16, Math.min(width - panelW - 16, width * config.posX));
+  const panelY = Math.max(16, Math.min(height - panelH - 18, height * config.posY));
   const radius = Math.max(12, width * 0.012);
 
   ctx.save();
@@ -279,21 +287,23 @@ function drawTelemetryPanel(
   const titleSize = Math.max(11, Math.min(19, panelW * 0.047));
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = 'rgba(255,255,255,0.62)';
-  ctx.font = `600 ${Math.max(8, titleSize * 0.56)}px Arial, sans-serif`;
-  ctx.letterSpacing = '0.18em';
-  ctx.fillText('ACTIVITY SUMMARY', panelX + pad, panelY + 23);
+  let dividerY = panelY + 18;
+  if (showHeader) {
+    ctx.fillStyle = 'rgba(255,255,255,0.56)';
+    ctx.font = `600 ${Math.max(8, titleSize * 0.52)}px Arial, sans-serif`;
+    ctx.letterSpacing = '0.17em';
+    ctx.fillText('ACTIVITY', panelX + pad, panelY + 23);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = `700 ${titleSize}px Arial, sans-serif`;
-  ctx.letterSpacing = '0.01em';
-  let shortTitle = title;
-  while (ctx.measureText(shortTitle).width > panelW - pad * 2 && shortTitle.length > 8) {
-    shortTitle = shortTitle.slice(0, -2);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `700 ${titleSize}px Arial, sans-serif`;
+    ctx.letterSpacing = '0.01em';
+    let shortTitle = title;
+    while (ctx.measureText(shortTitle).width > panelW - pad * 2 && shortTitle.length > 8) {
+      shortTitle = shortTitle.slice(0, -2);
+    }
+    ctx.fillText(shortTitle, panelX + pad, panelY + 44);
+    dividerY = panelY + 57;
   }
-  ctx.fillText(shortTitle, panelX + pad, panelY + 43);
-
-  const dividerY = panelY + 54;
   ctx.strokeStyle = 'rgba(255,255,255,0.16)';
   ctx.beginPath();
   ctx.moveTo(panelX + pad, dividerY);
