@@ -11,6 +11,8 @@ import { OverlayTab } from './components/OverlayTab';
 import { FulfillmentModal } from './components/FulfillmentModal';
 import { LandingPage } from './components/LandingPage';
 import { EventLandingPage } from './components/EventLandingPage';
+import { V2StudioEditor } from './components/v2/V2StudioEditor';
+import { V2PresetId, V2_VISUAL_PRESETS } from './data/v2Presets';
 import { FEATURED_EVENTS, RIDE_JOBURG_EVENT, EventPreset } from './data/eventCatalog';
 import {
   SAMPLE_ACTIVITIES,
@@ -29,7 +31,7 @@ import {
   LogoCorner,
 } from './types/poster';
 import { renderSpatialArtwork } from './utils/canvasRenderer';
-import { UploadCloud, Layers, Unlock, Download, Share2, Check } from 'lucide-react';
+import { UploadCloud, Layers, Unlock, Download, Share2, Check, Sparkles } from 'lucide-react';
 
 export default function App() {
   // Option C: Dedicated Landing Page vs Studio Workspace vs Event Page state
@@ -57,6 +59,8 @@ export default function App() {
     return 'landing';
   });
 
+  const [editorMode, setEditorMode] = useState<'v2' | 'classic'>('v2');
+  const [activeV2Preset, setActiveV2Preset] = useState<V2PresetId | null>('signature_3d');
   const [sidebarTab, setSidebarTab] = useState<'upload' | 'overlay'>('upload');
 
   // Handle browser back/forward and hash navigation
@@ -141,17 +145,42 @@ export default function App() {
     if (evt.atmospherePreset) {
       setAtmosphere((prev) => ({ ...prev, ...evt.atmospherePreset }));
     }
+    setActiveV2Preset(null);
     navigateToStudio();
   };
 
-  // Core Activity & Scene State
+  const signature3dDefaults = V2_VISUAL_PRESETS[0];
+
+  // Core Activity & Scene State (Initialized with Signature 3D look for V2)
   const [currentActivity, setCurrentActivity] = useState<ActivityData>(SAMPLE_ACTIVITIES[0]);
   const [photoUrl, setPhotoUrl] = useState<string>(ASSETS.sydneyMarathon);
-  const [spatialRoute, setSpatialRoute] = useState<SpatialRouteConfig>(DEFAULT_SPATIAL_CONFIG);
-  const [hudCard, setHudCard] = useState<HudCardConfig>(DEFAULT_HUD_CONFIG);
-  const [atmosphere, setAtmosphere] = useState<PhotoAtmosphereConfig>(DEFAULT_ATMOSPHERE_CONFIG);
-  const [elevationConfig, setElevationConfig] = useState<ElevationOverlayConfig>(DEFAULT_ELEVATION_CONFIG);
+  const [spatialRoute, setSpatialRoute] = useState<SpatialRouteConfig>({
+    ...DEFAULT_SPATIAL_CONFIG,
+    ...signature3dDefaults.spatialRoute,
+  });
+  const [hudCard, setHudCard] = useState<HudCardConfig>({
+    ...DEFAULT_HUD_CONFIG,
+    ...signature3dDefaults.hudCard,
+  });
+  const [atmosphere, setAtmosphere] = useState<PhotoAtmosphereConfig>({
+    ...DEFAULT_ATMOSPHERE_CONFIG,
+    ...signature3dDefaults.atmosphere,
+  });
+  const [elevationConfig, setElevationConfig] = useState<ElevationOverlayConfig>({
+    ...DEFAULT_ELEVATION_CONFIG,
+    ...signature3dDefaults.elevationConfig,
+  });
   const [logoCorner, setLogoCorner] = useState<LogoCorner>('top-right');
+
+  const applyV2Preset = (presetId: V2PresetId) => {
+    const preset = V2_VISUAL_PRESETS.find((item) => item.id === presetId);
+    if (!preset) return;
+    setActiveV2Preset(presetId);
+    setSpatialRoute((prev) => ({ ...prev, ...preset.spatialRoute }));
+    setHudCard((prev) => ({ ...prev, ...preset.hudCard }));
+    setElevationConfig((prev) => ({ ...prev, ...preset.elevationConfig }));
+    setAtmosphere((prev) => ({ ...prev, ...preset.atmosphere }));
+  };
 
   // Digital Monetization & Modal State
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
@@ -259,7 +288,56 @@ export default function App() {
     );
   }
 
-  // Otherwise render the full Studio Workspace
+  // V2 Studio Workspace (default)
+  if (editorMode === 'v2') {
+    return (
+      <>
+        <V2StudioEditor
+          activity={currentActivity}
+          onUpdateActivity={(up) => setCurrentActivity((prev) => ({ ...prev, ...up }))}
+          photoUrl={photoUrl}
+          onSelectPhoto={(url) => setPhotoUrl(url)}
+          spatialRoute={spatialRoute}
+          onUpdateSpatialRoute={(up) => {
+            setSpatialRoute((prev) => ({ ...prev, ...up }));
+          }}
+          hudCard={hudCard}
+          onUpdateHudCard={(up) => {
+            setHudCard((prev) => ({ ...prev, ...up }));
+          }}
+          atmosphere={atmosphere}
+          onUpdateAtmosphere={(up) => setAtmosphere((prev) => ({ ...prev, ...up }))}
+          elevationConfig={elevationConfig}
+          onUpdateElevationConfig={(up) =>
+            setElevationConfig((prev) => ({ ...prev, ...up }))
+          }
+          logoCorner={logoCorner}
+          onUpdateLogoCorner={(c) => setLogoCorner(c)}
+          canvasRef={canvasRef}
+          isExporting={isExporting}
+          isWatermarkUnlocked={isWatermarkUnlocked}
+          onExportPng={handleExportPng}
+          onOpenOrder={() => setIsOrderModalOpen(true)}
+          onGoHome={navigateToLanding}
+          onSwitchToClassic={() => setEditorMode('classic')}
+          activePreset={activeV2Preset}
+          onSelectPreset={applyV2Preset}
+        />
+
+        <FulfillmentModal
+          isOpen={isOrderModalOpen}
+          onClose={() => setIsOrderModalOpen(false)}
+          activity={currentActivity}
+          onExportPng={handleExportPng}
+          isExporting={isExporting}
+          isWatermarkUnlocked={isWatermarkUnlocked}
+          onUnlockWatermark={() => setIsWatermarkUnlocked(true)}
+        />
+      </>
+    );
+  }
+
+  // Classic V1 Studio Workspace (preserved so no existing features are removed)
   return (
     <div className="min-h-screen flex flex-col bg-[#0F0F11] text-[#F3F3F5] font-sans antialiased">
       {/* Top Bar with Brand, Navigation, Free Export & $10 Paystack Unbrand */}
@@ -270,6 +348,21 @@ export default function App() {
         isWatermarkUnlocked={isWatermarkUnlocked}
         onGoHome={navigateToLanding}
       />
+
+      {/* Quick banner to return to V2 Studio */}
+      <div className="px-4 py-1.5 bg-zinc-900/90 border-b border-white/[0.08] flex items-center justify-between text-xs">
+        <span className="text-zinc-400 font-mono text-[11px]">
+          Viewing Classic V1 Inspector
+        </span>
+        <button
+          type="button"
+          onClick={() => setEditorMode('v2')}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FC5200] hover:bg-[#ff661a] text-white font-semibold text-[11px] cursor-pointer transition-colors"
+        >
+          <Sparkles className="w-3 h-3" />
+          <span>Switch to V2 Editor</span>
+        </button>
+      </div>
 
       {/* Main Content Workspace: Digital Canvas (left) + Control Inspector (right) */}
       <main className="flex-1 flex flex-col">
