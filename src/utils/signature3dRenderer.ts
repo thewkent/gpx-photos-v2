@@ -124,7 +124,7 @@ function drawSculptedRoute(
   const targetH = height * 0.46 * config.scale;
   const pitch = Math.max(0.48, Math.min(0.9, 0.48 + Math.sin(Math.max(14, config.tiltAngle) * Math.PI / 180) * 0.62));
 
-  const points: Point3[] = coords.map(p => {
+  const route = coords.map(p => {
     const nx = (p.x - minX) / spanX - 0.5;
     const ny = (p.y - minY) / spanY - 0.5;
     const rx = nx * cos - ny * sin;
@@ -139,148 +139,73 @@ function drawSculptedRoute(
       depth,
       elevation,
     };
-  });
-
-  // Remove near-identical samples; they create spikes in the bevel normals.
-  const route: Point3[] = points.filter((p, i) => i === 0 || Math.hypot(p.x - points[i - 1].x, p.y - points[i - 1].y) > 0.55);
+  }).filter((p, i, all) => i === 0 || Math.hypot(p.x - all[i - 1].x, p.y - all[i - 1].y) > 0.55);
   if (route.length < 2) return;
 
-  const base = Math.max(5.5, Math.min(12, config.lineWidth * 2.35));
-  const thickness = Math.max(2.5, base * 0.43);
-  const left: RibbonVertex[] = [];
-  const right: RibbonVertex[] = [];
-  const sideLeft: RibbonVertex[] = [];
-  const sideRight: RibbonVertex[] = [];
-
-  route.forEach((p, i) => {
-    const prev = route[Math.max(0, i - 1)];
-    const next = route[Math.min(route.length - 1, i + 1)];
-    const dx = next.x - prev.x;
-    const dy = next.y - prev.y;
-    const len = Math.max(0.001, Math.hypot(dx, dy));
-    const nx = -dy / len;
-    const ny = dx / len;
-    const depthWidth = 0.70 + p.depth * 0.42;
-    const half = base * depthWidth * (0.86 + p.elevation * 0.14);
-    left.push({ x: p.x + nx * half, y: p.y + ny * half });
-    right.push({ x: p.x - nx * half, y: p.y - ny * half });
-    sideLeft.push({ x: p.x + nx * half + 1, y: p.y + ny * half + thickness });
-    sideRight.push({ x: p.x - nx * half + 1, y: p.y - ny * half + thickness });
-  });
-
-  const polygon = (vertices: RibbonVertex[]) => {
+  const trace = () => {
     ctx.beginPath();
-    vertices.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-    ctx.closePath();
+    route.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
   };
-  const outline = [...left, ...right.slice().reverse()];
-  const side = [...sideLeft, ...sideRight.slice().reverse()];
 
-  // Ambient light cast by the object, then its tight contact shadow.
-  ctx.save();
-  polygon(outline.map(p => ({ x: p.x + 1, y: p.y + thickness + 2 })));
-  ctx.fillStyle = 'rgba(0,0,0,0.72)';
-  ctx.shadowColor = 'rgba(0,0,0,0.9)';
-  ctx.shadowBlur = Math.max(12, height * 0.022);
-  ctx.fill();
-  ctx.restore();
+  // The new visual language is a precision trajectory, not a miniature road.
+  // One fine luminous filament lets the photograph breathe and keeps the GPX legible.
+  const lineWidth = Math.max(1.65, Math.min(3.1, config.lineWidth * 0.68));
 
+  // Soft, close contact shadow gives the filament depth without a broad dark track.
   ctx.save();
-  polygon(outline.map(p => ({ x: p.x, y: p.y + thickness * 1.8 })));
-  ctx.fillStyle = 'rgba(255,83,24,0.20)';
-  ctx.shadowColor = '#ff5a1f';
-  ctx.shadowBlur = height * 0.022;
-  ctx.fill();
-  ctx.restore();
-
-  // Extruded lower wall: dark titanium at the edge, warm reflected light below.
-  ctx.save();
-  polygon(side);
-  const wall = ctx.createLinearGradient(0, anchorY, 0, anchorY + height * 0.12);
-  wall.addColorStop(0, '#ff9a4c');
-  wall.addColorStop(0.22, '#8e310f');
-  wall.addColorStop(1, '#24151a');
-  ctx.fillStyle = wall;
-  ctx.fill();
-  ctx.restore();
-
-  // Thin lower rim catches the light and makes the route read as a solid ribbon.
-  ctx.save();
-  ctx.beginPath();
-  sideLeft.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-  ctx.strokeStyle = 'rgba(255,119,54,0.72)';
-  ctx.lineWidth = 1.15;
-  ctx.stroke();
-  ctx.restore();
-
-  // Main top face.
-  ctx.save();
-  polygon(outline);
-  const face = ctx.createLinearGradient(anchorX - targetW * 0.35, anchorY - targetH * 0.3, anchorX + targetW * 0.4, anchorY + targetH * 0.4);
-  face.addColorStop(0, '#fff0c8');
-  face.addColorStop(0.18, '#ffb45f');
-  face.addColorStop(0.48, '#ff762c');
-  face.addColorStop(0.82, '#f04d16');
-  face.addColorStop(1, '#a82e13');
-  ctx.fillStyle = face;
-  ctx.fill();
-  ctx.restore();
-
-  // Continuous bevel highlights — a pale upper edge and a darker inner edge.
-  ctx.save();
-  ctx.beginPath();
-  left.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-  ctx.strokeStyle = 'rgba(255,248,225,0.95)';
-  ctx.lineWidth = 1.45;
+  trace();
+  ctx.strokeStyle = 'rgba(0,0,0,0.82)';
+  ctx.lineWidth = lineWidth + 2.8;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.shadowColor = 'rgba(255,183,116,0.65)';
-  ctx.shadowBlur = 5;
-  ctx.stroke();
-  ctx.beginPath();
-  right.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-  ctx.strokeStyle = 'rgba(92,24,12,0.74)';
-  ctx.lineWidth = 1.25;
-  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = Math.max(5, height * 0.009);
+  ctx.shadowOffsetY = Math.max(1.5, height * 0.0025);
   ctx.stroke();
   ctx.restore();
 
-  // A recessed, fine energy filament is the futuristic signature — not a neon tube.
+  // A restrained atmospheric halo, kept narrow so it never reads as a neon tube.
   ctx.save();
-  ctx.beginPath();
-  route.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
-  ctx.strokeStyle = 'rgba(255,244,220,0.72)';
-  ctx.lineWidth = 1.15;
+  trace();
+  ctx.strokeStyle = '#ff672b';
+  ctx.lineWidth = lineWidth * 2.4;
+  ctx.globalAlpha = 0.16;
+  ctx.shadowColor = '#ff5d20';
+  ctx.shadowBlur = height * 0.012;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.stroke();
   ctx.restore();
 
-  // Sparse direction chevrons are embedded into the ribbon surface.
-  const stride = Math.max(5, Math.floor(route.length / 10));
-  for (let i = stride; i < route.length - stride; i += stride) {
-    const p = route[i];
-    const a = route[i - 2] || route[i - 1];
-    const b = route[i + 2] || route[i + 1];
-    const angle = Math.atan2(b.y - a.y, b.x - a.x);
-    const size = Math.max(2.5, base * 0.38);
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate(angle);
-    ctx.strokeStyle = 'rgba(255,247,228,0.76)';
-    ctx.lineWidth = 1.1;
-    ctx.beginPath();
-    ctx.moveTo(-size, -size * 0.62);
-    ctx.lineTo(size * 0.15, 0);
-    ctx.lineTo(-size, size * 0.62);
-    ctx.stroke();
-    ctx.restore();
-  }
+  // Fine metallic core with a warm-to-cool highlight shift along the route.
+  ctx.save();
+  trace();
+  const filament = ctx.createLinearGradient(route[0].x, route[0].y, route[route.length - 1].x, route[route.length - 1].y);
+  filament.addColorStop(0, '#ffe2b4');
+  filament.addColorStop(0.28, '#ff9a50');
+  filament.addColorStop(0.72, '#ff6428');
+  filament.addColorStop(1, '#ffd0a0');
+  ctx.strokeStyle = filament;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.restore();
 
+  // A hairline highlight on one side creates a precision-machined, glass-fibre feel.
+  ctx.save();
+  trace();
+  ctx.strokeStyle = 'rgba(255,248,231,0.78)';
+  ctx.lineWidth = Math.max(0.55, lineWidth * 0.24);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+  ctx.restore();
+
+  // Only the endpoints receive hardware-like markers. No arrows, road texture or clutter.
   drawBeacon(ctx, route[0], height, 'START');
   drawBeacon(ctx, route[route.length - 1], height, 'FINISH');
 }
-
 function drawBeacon(ctx: CanvasRenderingContext2D, p: Point3, height: number, label: string) {
   const r = Math.max(5, height * 0.008);
   ctx.save();
