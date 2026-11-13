@@ -31,6 +31,7 @@ import {
   LogoCorner,
 } from './types/poster';
 import { renderSpatialArtwork } from './utils/canvasRenderer';
+import { renderSignature3DArtwork } from './utils/signature3dRenderer';
 import { UploadCloud, Layers, Unlock, Download, Share2, Check, Sparkles } from 'lucide-react';
 
 export default function App() {
@@ -220,7 +221,7 @@ export default function App() {
           // 4x high-DPI scaling produces a 3840px master print while preserving 100% preview proportions
           const printDpiScale = 4;
 
-          renderSpatialArtwork({
+          const renderOptions = {
             canvas: exportCanvas,
             width: baseW,
             height: baseH,
@@ -233,7 +234,11 @@ export default function App() {
             highDpiScale: printDpiScale,
             isWatermarked: !shouldOmitWatermark,
             logoCorner,
-          });
+          };
+
+          // Keep the paid/free export visually identical to the active editor renderer.
+          if (editorMode === 'v2') renderSignature3DArtwork(renderOptions);
+          else renderSpatialArtwork(renderOptions);
 
           exportCanvas.toBlob((blob) => {
             if (!blob) {
